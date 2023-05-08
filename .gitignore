@@ -1,0 +1,42 @@
+node_modules
+coverage
+.DS_Store
+dist
+
+dist/
+params/
+*.bak
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.S
+# C extensions
+*.so
+
+
+*.ll
+.npm
+# Distribution / packaging
+.Python
+env/
+build/
+build-*/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
