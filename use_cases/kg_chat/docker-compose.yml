@@ -3,9 +3,9 @@ services:
   backend:
     build:
       context: backend/.
-    hostname: backend
+    hostname: kgchat-backend
     restart: always
-    container_name: backend
+    container_name: kgchat-backend
     ports:
       - 7860:7860
     env_file:

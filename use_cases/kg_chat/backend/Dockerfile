@@ -1,16 +1,19 @@
-# Use the official Python base image with the desired version
-FROM python:3.11
+# Use base shared Python image
+FROM shared:latest
+
+# Create a folder
+RUN mkdir -p /use_cases/kg_chat/backend/src
 
 # Set the working directory
-WORKDIR /backend
+WORKDIR /use_cases/kg_chat/backend/src
 
-COPY requirements.txt /backend/requirements.txt
+COPY requirements.txt /use_cases/kg_chat/backend/src/requirements.txt
 
 # Install packages
 RUN pip install -r requirements.txt
 
 # Copy the project files into the container
-COPY ./src /backend
+COPY ./src /use_cases/kg_chat/backend/src/
 
 # Expose any necessary ports
 EXPOSE 7860
