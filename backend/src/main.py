@@ -14,7 +14,7 @@ neo4j_connection = Neo4jDatabase(
 )
 
 openai_api_key = os.environ.get(
-    "OPENAI_API_KEY", "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")
+    "OPENAI_API_KEY", "")
 
 llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo")
 
