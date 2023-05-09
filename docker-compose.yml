@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  backend:
+    build:
+      context: backend/.
+    hostname: backend
+    restart: always
+    container_name: backend
+    ports:
+      - 7860:7860
+    env_file:
+      - .env
