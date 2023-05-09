@@ -37,7 +37,7 @@ def schema_text(node_props, rel_props, rels):
   {node_props}
   Relationship properties are the following:
   {rel_props}
-  The relationshisp are the following
+  The relationships are the following
   {rels}
   Make sure to respect relationship types and directions
   """
