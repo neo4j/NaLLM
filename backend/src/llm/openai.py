@@ -3,8 +3,10 @@ from typing import (
     List,
 )
 
+from .basellm import BaseLLM
 
-class OpenAIChat():
+
+class OpenAIChat(BaseLLM):
     """Wrapper around OpenAI Chat large language models.
     """
 
@@ -22,4 +24,5 @@ class OpenAIChat():
             max_tokens=1000,
             messages=messages
         )
+        print(completions)
         return completions.choices[0].message.content
