@@ -1,6 +1,6 @@
-import { Button } from '@neo4j-ndl/react';
+import { Button } from "@neo4j-ndl/react";
 
-import '@neo4j-ndl/base/lib/neo4j-ds-styles.css';
+import "@neo4j-ndl/base/lib/neo4j-ds-styles.css";
 
 function App() {
   return (
