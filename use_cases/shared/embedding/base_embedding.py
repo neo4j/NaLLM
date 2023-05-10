@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Union, List
 
 
-class BaseComponent(ABC):
+class BaseEmbedding(ABC):
     """"""
     @abstractmethod
-    async def run(
+    async def generate(
         self,
-        input: Union[str, List[float]],
+        input: str,
     ) -> str:
         """Comment"""

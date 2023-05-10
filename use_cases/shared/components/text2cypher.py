@@ -1,5 +1,10 @@
-class Text2Cypher():
-    def __init__(self, llm, database, schema: bool, cypher_examples: str):
+from ..driver.neo4j import Neo4jDatabase
+from ..llm.basellm import BaseLLM
+from .base_component import BaseComponent
+
+
+class Text2Cypher(BaseComponent):
+    def __init__(self, llm: BaseLLM, database: Neo4jDatabase, schema: bool, cypher_examples: str):
         self.llm = llm
         self.database = database
         self.cypher_examples = cypher_examples
