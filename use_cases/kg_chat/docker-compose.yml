@@ -2,7 +2,8 @@ version: '3.7'
 services:
   backend:
     build:
-      context: backend/.
+      context: ../../
+      dockerfile: ./use_cases/kg_chat/backend/Dockerfile
     hostname: kgchat-backend
     restart: always
     container_name: kgchat-backend
