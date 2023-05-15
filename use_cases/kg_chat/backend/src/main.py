@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 import sys
 import os
 from pathlib import Path
@@ -7,12 +6,14 @@ current_file = Path(__file__).resolve()
 project_root = current_file.parents[4]
 sys.path.append(str(project_root))
 
-from use_cases.shared.llm.openai import OpenAIChat
-from use_cases.shared.driver.neo4j import Neo4jDatabase
-from use_cases.shared.components.summarize_cypher_result import SummarizeCypherResult
-from use_cases.shared.components.text2cypher import Text2Cypher
-from use_cases.shared.components.vector_search import VectorSearch
+from fastapi import FastAPI
+
 from use_cases.shared.embedding.openai import OpenAIEmbedding
+from use_cases.shared.components.vector_search import VectorSearch
+from use_cases.shared.components.text2cypher import Text2Cypher
+from use_cases.shared.components.summarize_cypher_result import SummarizeCypherResult
+from use_cases.shared.driver.neo4j import Neo4jDatabase
+from use_cases.shared.llm.openai import OpenAIChat
 
 cypher = {}
 cypher['arxiv'] = """
@@ -122,12 +123,7 @@ async def root():
     Checks if the database is empty
     """
     try:
-        data = neo4j_connection.query("""
-        MATCH (n)
-        WITH count(n) as c
-        RETURN CASE WHEN c > 0 THEN true ELSE false END AS output
-        """)
-        return {"message": data[0]["output"]}
+        return {"message": neo4j_connection.check_if_empty()}
     except Exception as e:
         return f"Error: {e}"
 

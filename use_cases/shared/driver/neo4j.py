@@ -70,3 +70,11 @@ class Neo4jDatabase:
         rels = [el["output"] for el in self.query(rel_query)]
         schema = schema_text(node_props, rel_props, rels)
         self.schema = schema
+
+    def check_if_empty(self):
+        data = self.query("""
+        MATCH (n)
+        WITH count(n) as c
+        RETURN CASE WHEN c > 0 THEN true ELSE false END AS output
+        """)
+        return data[0]["output"]
