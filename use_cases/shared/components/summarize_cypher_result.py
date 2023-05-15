@@ -1,3 +1,5 @@
+from .base_component import BaseComponent
+
 system = f"""
 You are an assistant that helps to generate text to form nice and human understandable answers based.
 The latest prompt contains the information, and you need to generate a human readable response based on the given information.
@@ -15,7 +17,7 @@ def generate_user_prompt(question, results):
     """
 
 
-class SummarizeCypherResult():
+class SummarizeCypherResult(BaseComponent):
     def __init__(self, llm):
         self.llm = llm
 
