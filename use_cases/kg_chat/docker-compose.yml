@@ -1,5 +1,23 @@
 version: '3.7'
 services:
+  neo4j:
+    image: neo4j
+    restart: always
+    hostname: kgchat-neo4j
+    container_name: kgchat-neo4j
+    ports:
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - ./neo4j/data:/data
+    environment:
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_AUTH=neo4j/pleaseletmein
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+    # Simple check testing whether the port 7474 is opened.
+    # If so, the instance running inside the container is considered as "healthy".
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
   backend:
     build:
       context: ../../
@@ -11,3 +29,7 @@ services:
       - 7860:7860
     env_file:
       - .env
+    depends_on:
+      # Make sure the application only starts when the DB is indeed ready
+      neo4j:
+        condition: service_healthy

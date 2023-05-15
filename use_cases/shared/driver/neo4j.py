@@ -50,8 +50,7 @@ class Neo4jDatabase:
         """Initialize a neo4j database"""
         self._driver = GraphDatabase.driver(host, auth=(user, password))
         # Add a test for connection
-        self.schema = self.generate_schema()
-        print(self.schema)
+        self.refresh_schema()
 
     def query(
         self,
@@ -63,11 +62,11 @@ class Neo4jDatabase:
             # Limit to at most 50 results? Maybe
             return [r.data() for r in result]
 
-    def generate_schema(self):
+    def refresh_schema(self):
         node_props = [el["output"]
                       for el in self.query(node_properties_query)]
         rel_props = [el["output"]
                      for el in self.query(rel_properties_query)]
         rels = [el["output"] for el in self.query(rel_query)]
         schema = schema_text(node_props, rel_props, rels)
-        return schema
+        self.schema = schema
