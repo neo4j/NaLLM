@@ -7,18 +7,34 @@ project_root = current_file.parents[4]
 sys.path.append(str(project_root))
 
 from fastapi import FastAPI
-from use_cases.shared.llm.openai import OpenAIChat
-from use_cases.shared.driver.neo4j import Neo4jDatabase
-from use_cases.shared.components.summarize_cypher_result import SummarizeCypherResult
-from use_cases.shared.components.text2cypher import Text2Cypher
-from use_cases.shared.components.vector_search import VectorSearch
+
 from use_cases.shared.embedding.openai import OpenAIEmbedding
+from use_cases.shared.components.vector_search import VectorSearch
+from use_cases.shared.components.text2cypher import Text2Cypher
+from use_cases.shared.components.summarize_cypher_result import SummarizeCypherResult
+from use_cases.shared.driver.neo4j import Neo4jDatabase
+from use_cases.shared.llm.openai import OpenAIChat
+
+cypher = {}
+cypher['arxiv'] = """
+CREATE CONSTRAINT IF NOT EXISTS FOR (p:Paper) REQUIRE p.id IS UNIQUE;
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/arxiv/arxiv.csv" AS row
+MERGE (p:Paper {id: row.paper_id})
+SET p += apoc.map.clean(row, ["paper_id", "authors"], [])
+WITH p, row.authors AS authors
+UNWIND authors as author
+MERGE (a:Author {name:author})
+MERGE (p)-[:HAS_AUTHOR]->(a);
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/arxiv/arxiv_embedding.csv" AS row
+MATCH (p:Paper {id: row.paper_id})
+SET p.embedding = row.embedding;"""
+
 
 neo4j_connection = Neo4jDatabase(
-    host=os.environ.get("NEO4J_URL", "bolt://54.156.128.31:7687"),
+    host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
     user=os.environ.get("NEO4J_USER", "neo4j"),
     password=os.environ.get(
-        "NEO4J_PASS", "compensation-drainers-tracks")
+        "NEO4J_PASS", "pleaseletmein")
 )
 
 openai_api_key = os.environ.get(
@@ -30,11 +46,6 @@ text2cypher = Text2Cypher(database=neo4j_connection,
                           llm=llm,
                           schema=True,
                           cypher_examples="""
-                          # I like Top Gun
-                          MATCH (m:Movie {title:"Top Gun"})
-                          MERGE (u:User {id:"Me"})
-                          MERGE (u)-[:LIKE]->(m)
-                          RETURN "Noted" AS result
                           """)
 
 summarize_results = SummarizeCypherResult(llm=llm)
@@ -42,7 +53,7 @@ summarize_results = SummarizeCypherResult(llm=llm)
 openai_embedding = OpenAIEmbedding(openai_api_key=openai_api_key)
 
 vector_search = VectorSearch(
-    database=neo4j_connection, label="Movie", property="embedding", k=3)
+    database=neo4j_connection, label="Paper", property="embedding", k=3)
 
 app = FastAPI()
 
@@ -84,6 +95,35 @@ async def root(question: str):
     try:
         embedding = openai_embedding.generate(question)
         return vector_search.run(embedding)
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@ app.get("/load")
+async def root(dataset: str):
+    """
+    Constructs appropriate indexes and import relevant dataset into Neo4j
+    """
+    if not dataset:
+        return {"message": "missing dataset"}
+    try:
+        queries = cypher[dataset].split(";")
+        for q in queries:
+            if q:
+                neo4j_connection.query(q)
+        neo4j_connection.refresh_schema()
+        return {"message": "import successful"}
+    except Exception as e:
+        return {"message": f"Error: {e}"}
+
+
+@ app.get("/init")
+async def root():
+    """
+    Checks if the database is empty
+    """
+    try:
+        return {"message": neo4j_connection.check_if_empty()}
     except Exception as e:
         return f"Error: {e}"
 
