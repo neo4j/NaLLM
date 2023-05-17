@@ -1,27 +1,5 @@
 version: "3.7"
 services:
-  # neo4j:
-  #   image: neo4j
-  #   restart: always
-  #   hostname: neo4j
-  #   container_name: unstrucuted-data-import-neo4j
-  #   ports:
-  #     - 7474:7474
-  #     - 7687:7687
-  #   volumes:
-  #     - ./neo4j/data:/data
-  #   environment:
-  #     - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
-  #     - NEO4J_AUTH=neo4j/pleaseletmein
-  #     - NEO4J_PLUGINS=["apoc", "graph-data-science"]
-  #   # Simple check testing whether the port 7474 is opened.
-  #   # If so, the instance running inside the container is considered as "healthy".
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD-SHELL",
-  #         "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1",
-  #       ]
   backend:
     build:
       context: ../../
@@ -35,6 +13,3 @@ services:
       - .env
     volumes:
       - .:/use_cases/unstructured_data_import
-    # depends_on:
-    #   neo4j:
-    #     condition: service_healthy

@@ -18,8 +18,6 @@ from use_cases.shared.components.unstructured_data_extractor import (
 from use_cases.shared.components.data_disambiguation import DataDisambiguation
 from use_cases.shared.components.data_to_csv import DataToCSV
 
-
-load_dotenv()
 openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
 llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo")
@@ -61,12 +59,8 @@ async def root(payload: Payload):
         return f"Error: {e}"
 
 
-@app.get("/")
-async def root():
-    return "Hello World!"
-
-
 if __name__ == "__main__":
+    load_dotenv()
     uvicorn.run(
         "use_cases.unstructured_data_import.main:app",
         host="0.0.0.0",
