@@ -1,0 +1,46 @@
+{
+  "name": "nallm-ui",
+  "version": "1.0.0",
+  "description": "UI template for the NaLLM project",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neo4j/NaLLM.git"
+  },
+  "keywords": [
+    "Neo4j",
+    "LLM",
+    "NaLLM"
+  ],
+  "author": "Neo4j",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/neo4j/NaLLM/issues"
+  },
+  "homepage": "https://github.com/neo4j/NaLLM#readme",
+  "dependencies": {
+    "@heroicons/react": "2.0.13",
+    "@neo4j-ndl/base": "^1.3.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.6",
+    "@types/react-dom": "^18.2.4",
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.40.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.1",
+    "postcss": "^8.4.23",
+    "tailwindcss": "^3.3.2",
+    "vite": "^4.3.5"
+  }
+}
