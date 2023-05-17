@@ -13,3 +13,4 @@ services:
       - .env
     volumes:
       - .:/use_cases/unstructured_data_import
+      - ../shared:/use_cases/shared
