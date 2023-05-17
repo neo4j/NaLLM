@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 services:
   neo4j:
     image: neo4j
@@ -17,7 +17,11 @@ services:
     # Simple check testing whether the port 7474 is opened.
     # If so, the instance running inside the container is considered as "healthy".
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1",
+        ]
   backend:
     build:
       context: ../../
@@ -29,6 +33,9 @@ services:
       - 7860:7860
     env_file:
       - .env
+    volumes:
+      - .:/use_cases/kg_chat
+      - ../shared:/use_cases/shared
     depends_on:
       # Make sure the application only starts when the DB is indeed ready
       neo4j:
