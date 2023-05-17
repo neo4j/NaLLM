@@ -1,0 +1,16 @@
+version: "3.7"
+services:
+  backend:
+    build:
+      context: ../../
+      dockerfile: ./use_cases/unstructured_data_import/Dockerfile
+    hostname: unstructured-data-import-backend
+    restart: always
+    container_name: unstructured-data-import-backend
+    ports:
+      - 7860:7860
+    env_file:
+      - .env
+    volumes:
+      - .:/use_cases/unstructured_data_import
+      - ../shared:/use_cases/shared
