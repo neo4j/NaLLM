@@ -24,4 +24,4 @@ EXPOSE 7860
 WORKDIR $FOLDER/src
 
 # Start the application
-CMD ["python", "main.py"]
+CMD ["uvicorn", "--host", "0.0.0.0", "--port", "7860", "--reload", "--reload-dir", "/use_cases", "main:app"]
