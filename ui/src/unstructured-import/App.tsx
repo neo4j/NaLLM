@@ -8,7 +8,9 @@ import { graphSchemaToModelSchema } from "./utils/graph-schema-utils";
 function App() {
   const [useSchema, setUseSchema] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>();
+  const [result, setResult] = useState<string | null>(
+    `\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines`
+  );
   const [schema, setSchema] = useState<string>("");
 
   const handleImport = async () => {
@@ -44,9 +46,9 @@ function App() {
   };
 
   return (
-    <div className="h-screen n-bg-palette-neutral-bg-default">
-      <main className="flex flex-col h-screen p-2">
-        <div className="flex flex-col w-2/3 min-h-0 gap-2 m-auto flex-grow-[0.5] basis-0 overflow-auto">
+    <div className="min-h-screen n-bg-palette-neutral-bg-default">
+      <main className="flex flex-col gap-10 p-2">
+        <div className="flex flex-col w-2/3 min-h-0 gap-2 mx-auto mt-10">
           <h1 className="text-4xl font-bold text-center">Import data</h1>
           <p>
             This tool is used to import unstructured data into Neo4j. It takes a
@@ -86,9 +88,9 @@ function App() {
           </button>
         </div>
 
-        <div className="flex-1 h-full min-h-0">
+        <div>
           {result ? (
-            <div className="flex flex-col w-2/3 gap-2 m-auto">
+            <div className="flex flex-col w-2/3 gap-2 mx-auto">
               <h1 className="text-4xl font-bold text-center">Result</h1>
               <p>
                 The import was successful. The following nodes and relationships
