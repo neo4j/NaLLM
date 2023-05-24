@@ -8,9 +8,7 @@ import { graphSchemaToModelSchema } from "./utils/graph-schema-utils";
 function App() {
   const [useSchema, setUseSchema] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(
-    `\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmany lines`
-  );
+  const [result, setResult] = useState<string | null>(null);
   const [schema, setSchema] = useState<string>("");
 
   const handleImport = async () => {
