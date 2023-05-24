@@ -29,5 +29,5 @@ export default {
       variants: ["hover"],
     },
   ],
-  plugins: [],
+  plugins: [require("daisyui")],
 };

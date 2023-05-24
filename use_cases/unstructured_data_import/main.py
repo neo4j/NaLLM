@@ -10,6 +10,8 @@ current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
 sys.path.append(str(project_root))
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from use_cases.shared.llm.openai import OpenAIChat
 from use_cases.shared.driver.neo4j import Neo4jDatabase
 from use_cases.shared.components.unstructured_data_extractor import (
@@ -24,13 +26,25 @@ llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo")
 
 app = FastAPI()
 
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 class Payload(BaseModel):
     input: str
     neo4j_schema: str
 
 
-@app.post("/data2cypher/")
+@app.post("/data2cypher")
 async def root(payload: Payload):
     """
     Takes an input and created a Cypher query
@@ -52,7 +66,7 @@ async def root(payload: Payload):
         csvConverter = DataToCSV(llm=llm)
         csv = csvConverter.run(dis)
 
-        return {"result": csv}
+        return {"data": csv}
 
     except Exception as e:
         print(e)
