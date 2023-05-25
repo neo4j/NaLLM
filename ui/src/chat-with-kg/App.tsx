@@ -4,6 +4,8 @@ import type { ChatMessageObject } from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { fetchQuestionAnswer } from "./utils/fetch-utils";
 
+const SEND_REQUESTS = true;
+
 const chatMessageObjects: ChatMessageObject[] = [
   {
     id: 0,
@@ -28,27 +30,42 @@ function App() {
         type: "input",
         message: message
       }]));
-      setLoading(true);
-      fetchQuestionAnswer(message).then(response => {
-        setChatMesages(chatMessages => chatMessages.concat([{
-          id: chatMessages.length,
-          type: "text",
-          message: response
-        }]));
-      }, error => {
-        setChatMesages(chatMessages => chatMessages.concat([{
-          id: chatMessages.length,
-          type: "error",
-          message: "Oops, an error occurred"
-        }]));
-      });
+      if (SEND_REQUESTS) {
+        setLoading(true);
+        fetchQuestionAnswer(message).then(response => {
+          setChatMesages(chatMessages => chatMessages.concat([{
+            id: chatMessages.length,
+            type: "text",
+            message: response
+          }]));
+          setLoading(false);
+        }, error => {
+          setChatMesages(chatMessages => chatMessages.concat([{
+            id: chatMessages.length,
+            type: "error",
+            message: "Oops, an error occurred"
+          }]));
+          setLoading(false);
+        });
+      }
+      else {
+        setLoading(true);
+        setTimeout(() => {
+          setChatMesages(chatMessages => chatMessages.concat([{
+            id: chatMessages.length,
+            type: "text",
+            message: "This is a fake response, simulating the kind of thing that will be returned by the server\nIf you are seeing this message, you can change the flag in the code to instead get real responses from the backend."
+          }]));
+          setLoading(false);
+        }, 3000);
+      }
     }
   }
 
   return (
     <div className="flex flex-col min-w-[800px] min-h-[100vh]">
-      <ChatContainer chatMessages={chatMessages} />
-      <ChatInput onChatInput={onChatInput} />
+      <ChatContainer chatMessages={chatMessages} loading={loading}/>
+      <ChatInput onChatInput={onChatInput} loading={loading}/>
     </div>
   );
 }
