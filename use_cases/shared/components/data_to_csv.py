@@ -2,7 +2,7 @@ from typing import List
 from .base_component import BaseComponent
 
 
-def generate_system_message():
+def generate_system_message() -> str:
     return f"""
 You will be given a dataset of nodes and relationships. Your task is to covert this data into a CSV format.
 Return only the data in the CSV format and nothing else. Return a CSV file for every type of node and relationship.
@@ -11,17 +11,17 @@ Important: If you don't get any data or data that does not follow the previously
 """
 
 
-def generate_prompt(data):
+def generate_prompt(data) -> str:
     return f""" Here is the data:
 {data}
 """
 
 
 class DataToCSV(BaseComponent):
-    def __init__(self, llm):
+    def __init__(self, llm) -> None:
         self.llm = llm
 
-    def run(self, data: List[str]):
+    def run(self, data: List[str]) -> str:
         messages = [
             {"role": "system", "content": generate_system_message()},
             {"role": "user", "content": generate_prompt(data)},

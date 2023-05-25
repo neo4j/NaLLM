@@ -30,7 +30,7 @@ RETURN label + " node has a relationship " + property + " that points to node " 
 """
 
 
-def schema_text(node_props, rel_props, rels):
+def schema_text(node_props, rel_props, rels) -> str:
     return f"""
   This is the schema representation of the Neo4j database.
   Node properties are the following:
@@ -46,7 +46,7 @@ def schema_text(node_props, rel_props, rels):
 class Neo4jDatabase:
     def __init__(self, host: str = "neo4j://localhost:7687",
                  user: str = "neo4j",
-                 password: str = "pleaseletmein"):
+                 password: str = "pleaseletmein") -> None:
         """Initialize a neo4j database"""
         self._driver = GraphDatabase.driver(host, auth=(user, password))
         # Add a test for connection
@@ -62,7 +62,7 @@ class Neo4jDatabase:
             # Limit to at most 50 results? Maybe
             return [r.data() for r in result]
 
-    def refresh_schema(self):
+    def refresh_schema(self) -> None:
         node_props = [el["output"]
                       for el in self.query(node_properties_query)]
         rel_props = [el["output"]
@@ -71,7 +71,7 @@ class Neo4jDatabase:
         schema = schema_text(node_props, rel_props, rels)
         self.schema = schema
 
-    def check_if_empty(self):
+    def check_if_empty(self) -> bool:
         data = self.query("""
         MATCH (n)
         WITH count(n) as c

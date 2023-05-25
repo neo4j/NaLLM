@@ -1,3 +1,5 @@
+from typing import Dict
+
 from .base_component import BaseComponent
 
 system = f"""
@@ -9,7 +11,7 @@ I repeat, do not add any information that is not explicitly given.
 """
 
 
-def generate_user_prompt(question, results):
+def generate_user_prompt(question, results) -> str:
     return f"""
     The question was {question}
     Answer the question by using the following results:
@@ -18,10 +20,10 @@ def generate_user_prompt(question, results):
 
 
 class SummarizeCypherResult(BaseComponent):
-    def __init__(self, llm):
+    def __init__(self, llm) -> None:
         self.llm = llm
 
-    def run(self, question, results):
+    def run(self, question, results) -> Dict[str, str]:
         messages = [
             {"role": "system", "content": system},
             {"role": "user", "content": generate_user_prompt(

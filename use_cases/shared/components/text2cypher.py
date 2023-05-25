@@ -1,17 +1,19 @@
+from typing import Dict, List, Union
+
 from ..driver.neo4j import Neo4jDatabase
 from ..llm.basellm import BaseLLM
 from .base_component import BaseComponent
 
 
 class Text2Cypher(BaseComponent):
-    def __init__(self, llm: BaseLLM, database: Neo4jDatabase, schema: bool, cypher_examples: str):
+    def __init__(self, llm: BaseLLM, database: Neo4jDatabase, schema: bool, cypher_examples: str) -> None:
         self.llm = llm
         self.database = database
         self.cypher_examples = cypher_examples
         if schema:
             self.schema = database.schema
 
-    def get_system_message(self):
+    def get_system_message(self) -> str:
         system = """
         Task: Generate Cypher queries to query a Neo4j graph database.
         Instructions:
@@ -36,7 +38,7 @@ class Text2Cypher(BaseComponent):
                      """
         return system
 
-    def construct_cypher(self, question):
+    def construct_cypher(self, question:str) -> str:
         messages = [
             {"role": "system", "content": self.get_system_message()},
             {"role": "user", "content": question},
@@ -44,7 +46,7 @@ class Text2Cypher(BaseComponent):
         cypher = self.llm.generate(messages)
         return cypher
 
-    def run(self, question):
+    def run(self, question:str) -> Dict[str,Union[str, List[Dict[str, str]]]]:
         cypher = self.construct_cypher(question)
         print(cypher)
         try:
