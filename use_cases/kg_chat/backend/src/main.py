@@ -7,6 +7,7 @@ project_root = current_file.parents[4]
 sys.path.append(str(project_root))
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from use_cases.shared.embedding.openai import OpenAIEmbedding
 from use_cases.shared.components.vector_search import VectorSearch
@@ -56,8 +57,30 @@ vector_search = VectorSearch(
 
 app = FastAPI()
 
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @ app.get("/text2cypher")
+async def root(question: str):
+    """
+    Takes an input and returns results from the database
+    """
+    try:
+        return text2cypher.run(question)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@ app.post("/text2cypher")
 async def root(question: str):
     """
     Takes an input and returns results from the database
@@ -78,9 +101,31 @@ async def root(question: str):
         return {"output": summarize_results.run(question, results['output']), "generated_cypher": results['generated_cypher']}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@ app.post("/text2text")
+async def root(question: str):
+    """
+    Takes an input and returns natural language generate response
+    """
+    try:
+        results = text2cypher.run(question)
+        return {"output": summarize_results.run(question, results['output']), "generated_cypher": results['generated_cypher']}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @ app.get("/text2vector")
+async def root(question: str):
+    """
+    Takes an input and embeds it with OpenAI model, then performs a vector search
+    """
+    try:
+        embedding = openai_embedding.generate(question)
+        return vector_search.run(embedding)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@ app.post("/text2vector")
 async def root(question: str):
     """
     Takes an input and embeds it with OpenAI model, then performs a vector search

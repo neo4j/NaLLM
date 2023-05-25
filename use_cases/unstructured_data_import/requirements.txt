@@ -1,6 +1,0 @@
-fastapi==0.95.1
-logger==1.4
-neo4j==5.8.0
-uvicorn==0.22.0
-openai==0.27.6
-tiktoken==0.4.0
