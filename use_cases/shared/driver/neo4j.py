@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict
 
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, exceptions
 
 from logger import logger
 
@@ -26,7 +26,7 @@ rel_query = """
 CALL apoc.meta.data()
 YIELD label, other, elementType, type, property
 WHERE type = "RELATIONSHIP" AND elementType = "node"
-RETURN label + " node has a relationship " + property + " that points to node " + toString(other[0]) AS output
+RETURN "(:" + label + ")-[:" + property + "]->(:" + toString(other[0]) + ")" AS output
 """
 
 
@@ -39,17 +39,31 @@ def schema_text(node_props, rel_props, rels) -> str:
   {rel_props}
   The relationships are the following
   {rels}
-  Make sure to respect relationship types and directions
   """
 
 
 class Neo4jDatabase:
     def __init__(self, host: str = "neo4j://localhost:7687",
                  user: str = "neo4j",
-                 password: str = "pleaseletmein") -> None:
+                 password: str = "pleaseletmein",
+                 database: str = "neo4j") -> None:
         """Initialize a neo4j database"""
         self._driver = GraphDatabase.driver(host, auth=(user, password))
-        # Add a test for connection
+        self._database = database
+        self.schema = ""
+        # Verify connection
+        try:
+            self._driver.verify_connectivity()
+        except exceptions.ServiceUnavailable:
+            raise ValueError(
+                "Could not connect to Neo4j database. "
+                "Please ensure that the url is correct"
+            )
+        except exceptions.AuthError:
+            raise ValueError(
+                "Could not connect to Neo4j database. "
+                "Please ensure that the username and password are correct"
+            )
         self.refresh_schema()
 
     def query(
@@ -58,9 +72,14 @@ class Neo4jDatabase:
         params: Optional[Dict] = {}
     ) -> List[Dict[str, str]]:
         with self._driver.session() as session:
-            result = session.run(cypher_query, params)
-            # Limit to at most 50 results? Maybe
-            return [r.data() for r in result]
+            try:
+                result = session.run(cypher_query, params)
+                # Limit to at most 50 results
+                return [r.data() for r in result][:50]
+            except exceptions.CypherSyntaxError as e:
+                raise ValueError(e)
+
+
 
     def refresh_schema(self) -> None:
         node_props = [el["output"]
@@ -70,6 +89,7 @@ class Neo4jDatabase:
         rels = [el["output"] for el in self.query(rel_query)]
         schema = schema_text(node_props, rel_props, rels)
         self.schema = schema
+        print(schema)
 
     def check_if_empty(self) -> bool:
         data = self.query("""

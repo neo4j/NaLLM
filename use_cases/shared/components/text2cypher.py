@@ -48,9 +48,15 @@ class Text2Cypher(BaseComponent):
 
     def run(self, question:str) -> Dict[str,Union[str, List[Dict[str, str]]]]:
         cypher = self.construct_cypher(question)
+        # Check if Cypher was constructed or the model couldn't finish the task
+        if not "MATCH" in cypher:
+            return {"output": cypher,
+                    "generated_cypher": None}
+        
         print(cypher)
         try:
             return {"output": self.database.query(cypher),
                     "generated_cypher": cypher}
-        except Exception as e:
+        except ValueError as e:
+            # Do something better
             print(e)

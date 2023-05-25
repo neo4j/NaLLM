@@ -1,4 +1,5 @@
 import openai
+from retry import retry
 from typing import (
     List,
 )
@@ -14,15 +15,27 @@ class OpenAIChat(BaseLLM):
         openai.api_key = openai_api_key
         self.model = model_name
 
+    retry(tries=3, delay=1)
     def generate(
         self,
         messages: List[str],
     ) -> str:
-        completions = openai.ChatCompletion.create(
-            model=self.model,
-            temperature=0.0,
-            max_tokens=1000,
-            messages=messages
-        )
-        print(completions)
-        return completions.choices[0].message.content
+        try:
+            completions = openai.ChatCompletion.create(
+                model=self.model,
+                temperature=0.0,
+                max_tokens=1000,
+                messages=messages
+            )
+            print(completions)
+            return completions.choices[0].message.content
+        # catch context length / do not retry
+        except openai.error.InvalidRequestError as e:
+            return str(f"Error: {e}")
+        # catch authorization errors / do not retry
+        except openai.error.AuthenticationError as e:
+            return "Error: The provided OpenAI API key is invalid"
+        except Exception as e:
+            print(f"Retrying LLM call {e}")
+            raise Exception()
+
