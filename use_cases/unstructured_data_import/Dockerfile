@@ -8,7 +8,7 @@ ARG FOLDER=/use_cases/unstructured_data_import
 RUN mkdir -p $FOLDER
 
 # Install packages
-COPY .$FOLDER/requirements.txt $FOLDER/requirements.txt
+COPY ./use_cases/shared/requirements.txt $FOLDER/requirements.txt
 RUN pip install -r $FOLDER/requirements.txt
 
 # Copy the project files into the container

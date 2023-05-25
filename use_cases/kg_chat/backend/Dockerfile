@@ -8,7 +8,7 @@ ARG FOLDER=/use_cases/kg_chat/backend
 RUN mkdir -p $FOLDER
 
 # Install packages
-COPY .$FOLDER/requirements.txt $FOLDER/requirements.txt
+COPY ./use_cases/shared/requirements.txt $FOLDER/requirements.txt
 RUN pip install -r $FOLDER/requirements.txt
 
 # Copy the project files into the container
