@@ -1,8 +1,10 @@
+from typing import List
+
 from .base_component import BaseComponent
 import tiktoken
 
 
-def generate_system_message_with_schema():
+def generate_system_message_with_schema() -> str:
     return """
 You are a data scientist working for a company that is building a graph database. Your task is to extract information from data and convert it into a graph database.
 Provide a set of Nodes in the form [ENTITY, TYPE, PROPERTIES] and a set of relationships in the form [ENTITY1, RELATIONSHIP, ENTITY2, PROPERTIES]. 
@@ -16,7 +18,7 @@ Relationships: [["Alice", "roommate", "Bob"]]
 """
 
 
-def generate_system_message():
+def generate_system_message() -> str:
     return """
 You are a data scientist working for a company that is building a graph database. Your task is to extract information from data and convert it into a graph database.
 Provide a set of Nodes in the form [ENTITY, TYPE, PROPERTIES] and a set of relationships in the form [ENTITY1, RELATIONSHIP, ENTITY2, PROPERTIES].
@@ -28,12 +30,12 @@ Relationships: [["Alice", "roommate", "Bob"]]
 """
 
 
-def generate_prompt(data):
+def generate_prompt(data) -> str:
     return f"""
 Data: {data}"""
 
 
-def generate_prompt_with_schema(data, schema):
+def generate_prompt_with_schema(data, schema) -> str:
     return f"""
 Schema: {schema}
 Data: {data}"""
@@ -46,13 +48,13 @@ def num_tokens_from_string(string: str, encoding_name: str) -> int:
     return num_tokens
 
 
-def splitString(string, max_length):
+def splitString(string, max_length) -> List[str]:
     return [string[i : i + max_length] for i in range(0, len(string), max_length)]
 
 
 def splitStringToFitTokenSpace(
     string, max_tokens, message_tokens, encoding_name, extra_tokens=0
-):
+) -> List[str]:
     prompt_string = generate_system_message() + generate_prompt("")
     prompt_tokens = num_tokens_from_string(prompt_string, encoding_name)
     allowed_tokens = max_tokens - prompt_tokens - message_tokens - extra_tokens
@@ -81,10 +83,10 @@ def splitStringToFitTokenSpace(
 
 
 class DataExtractor(BaseComponent):
-    def __init__(self, llm):
+    def __init__(self, llm) -> None:
         self.llm = llm
 
-    def run(self, data: str):
+    def run(self, data: str) -> List[str]:
         encoding_name = tiktoken.encoding_for_model(self.llm.model).name
         chunked_data = splitStringToFitTokenSpace(data, 4096, 1100, encoding_name, 0)
 
@@ -100,10 +102,10 @@ class DataExtractor(BaseComponent):
 
 
 class DataExtractorWithSchema(BaseComponent):
-    def __init__(self, llm):
+    def __init__(self, llm) -> None:
         self.llm = llm
 
-    def run(self, data: str, schema: str):
+    def run(self, data: str, schema: str) -> List[str]:
         encoding_name = tiktoken.encoding_for_model(self.llm.model).name
         chunked_data = splitStringToFitTokenSpace(
             data,

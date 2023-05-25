@@ -10,7 +10,7 @@ class OpenAIChat(BaseLLM):
     """Wrapper around OpenAI Chat large language models.
     """
 
-    def __init__(self, openai_api_key: str, model_name: str = "gpt-3.5-turbo"):
+    def __init__(self, openai_api_key: str, model_name: str = "gpt-3.5-turbo") -> None:
         openai.api_key = openai_api_key
         self.model = model_name
 

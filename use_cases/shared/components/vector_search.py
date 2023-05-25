@@ -1,8 +1,10 @@
+from typing import Dict
+
 from ..driver.neo4j import Neo4jDatabase
 from .base_component import BaseComponent
 
 
-def construct_cypher(label, property, k):
+def construct_cypher(label, property, k) -> str:
     return f"""
     MATCH (n:`{label}`)
     WHERE n.`{property}` IS NOT NULL
@@ -14,12 +16,12 @@ def construct_cypher(label, property, k):
 
 
 class VectorSearch(BaseComponent):
-    def __init__(self, database: Neo4jDatabase, label: str, property: str, k: int):
+    def __init__(self, database: Neo4jDatabase, label: str, property: str, k: int) -> None:
         self.database = database
         self.generated_cypher = construct_cypher(label, property, k)
         print(self.generated_cypher)
 
-    def run(self, input):
+    def run(self, input) -> Dict[str,str]:
         try:
             return {"output": [str(el["output"]) for el in self.database.query(self.generated_cypher,
                                                                                {'input_vector': input})],

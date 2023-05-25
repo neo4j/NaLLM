@@ -64,7 +64,7 @@ async def root(question: str):
     Takes an input and returns results from the database
     """
     if not question:
-        return "missing question"
+        return {"type": "error", "message": "missing question"}
     try:
         return text2cypher.run(question)
     except Exception as e:
@@ -77,7 +77,7 @@ async def root(question: str):
     Takes an input and returns natural language generate response
     """
     if not question:
-        return "missing question"
+        return {"type": "error", "message": "missing question"}
     try:
         results = text2cypher.run(question)
         return {"output": summarize_results.run(question, results['output']), "generated_cypher": results['generated_cypher']}
@@ -91,7 +91,7 @@ async def root(question: str):
     Takes an input and embeds it with OpenAI model, then performs a vector search
     """
     if not question:
-        return "missing question"
+        return {"type": "error", "message": "missing question"}
     try:
         embedding = openai_embedding.generate(question)
         return vector_search.run(embedding)
@@ -105,7 +105,7 @@ async def root(dataset: str):
     Constructs appropriate indexes and import relevant dataset into Neo4j
     """
     if not dataset:
-        return {"message": "missing dataset"}
+        return {"type":"error", "message": "missing dataset"}
     try:
         queries = cypher[dataset].split(";")
         for q in queries:
