@@ -19,7 +19,6 @@ class VectorSearch(BaseComponent):
     def __init__(self, database: Neo4jDatabase, label: str, property: str, k: int) -> None:
         self.database = database
         self.generated_cypher = construct_cypher(label, property, k)
-        print(self.generated_cypher)
 
     def run(self, input:str) -> Dict[str,Union[str, List[Dict[str, str]]]]:
         try:
