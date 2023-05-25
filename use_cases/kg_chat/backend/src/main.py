@@ -15,6 +15,12 @@ from use_cases.shared.components.text2cypher import Text2Cypher
 from use_cases.shared.components.summarize_cypher_result import SummarizeCypherResult
 from use_cases.shared.driver.neo4j import Neo4jDatabase
 from use_cases.shared.llm.openai import OpenAIChat
+from pydantic import BaseModel
+
+
+class Payload(BaseModel):
+    question: str
+
 
 cypher = {}
 cypher['arxiv'] = """
@@ -69,7 +75,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @ app.get("/text2cypher")
 async def root(question: str):
     """
@@ -79,40 +84,44 @@ async def root(question: str):
         return text2cypher.run(question)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @ app.post("/text2cypher")
-async def root(question: str):
+async def root(payload: Payload):
     """
     Takes an input and returns results from the database
     """
+    if not payload:
+        return {"detail": "missing request body"}
     try:
-        return text2cypher.run(question)
+        return text2cypher.run(payload.question)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @ app.get("/text2text")
-async def root(question: str):
+async def root(payload: Payload):
     """
     Takes an input and returns natural language generate response
     """
+    if not payload:
+        return {"detail": "missing request body"}
     try:
-        results = text2cypher.run(question)
-        return {"output": summarize_results.run(question, results['output']), "generated_cypher": results['generated_cypher']}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@ app.post("/text2text")
-async def root(question: str):
-    """
-    Takes an input and returns natural language generate response
-    """
-    try:
-        results = text2cypher.run(question)
-        return {"output": summarize_results.run(question, results['output']), "generated_cypher": results['generated_cypher']}
+        results = text2cypher.run(payload.question)
+        return {"output": summarize_results.run(payload.question, results['output']), "generated_cypher": results['generated_cypher']}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@ app.post("/text2text")
+async def root(payload: Payload):
+    """
+    Takes an input and returns natural language generate response
+    """
+    if not payload:
+        return {"detail": "missing request body"}
+    try:
+        results = text2cypher.run(payload.question)
+        return {"output": summarize_results.run(payload.question, results['output']), "generated_cypher": results['generated_cypher']}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @ app.get("/text2vector")
 async def root(question: str):
@@ -124,7 +133,7 @@ async def root(question: str):
         return vector_search.run(embedding)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @ app.post("/text2vector")
 async def root(question: str):
     """
@@ -135,7 +144,6 @@ async def root(question: str):
         return vector_search.run(embedding)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @ app.get("/load")
 async def root(dataset: str):
