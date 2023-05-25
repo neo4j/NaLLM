@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Union
 
 from ..driver.neo4j import Neo4jDatabase
 from ..llm.basellm import BaseLLM
@@ -38,7 +38,7 @@ class Text2Cypher(BaseComponent):
                      """
         return system
 
-    def construct_cypher(self, question) -> str:
+    def construct_cypher(self, question:str) -> str:
         messages = [
             {"role": "system", "content": self.get_system_message()},
             {"role": "user", "content": question},
@@ -46,7 +46,7 @@ class Text2Cypher(BaseComponent):
         cypher = self.llm.generate(messages)
         return cypher
 
-    def run(self, question) -> Dict[str, str]:
+    def run(self, question:str) -> Dict[str,Union[str, List[Dict[str, str]]]]:
         cypher = self.construct_cypher(question)
         print(cypher)
         try:

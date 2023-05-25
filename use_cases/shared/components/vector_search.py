@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Union
 
 from ..driver.neo4j import Neo4jDatabase
 from .base_component import BaseComponent
@@ -21,7 +21,7 @@ class VectorSearch(BaseComponent):
         self.generated_cypher = construct_cypher(label, property, k)
         print(self.generated_cypher)
 
-    def run(self, input) -> Dict[str,str]:
+    def run(self, input:str) -> Dict[str,Union[str, List[Dict[str, str]]]]:
         try:
             return {"output": [str(el["output"]) for el in self.database.query(self.generated_cypher,
                                                                                {'input_vector': input})],

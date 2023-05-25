@@ -17,6 +17,6 @@ class OpenAIEmbedding(BaseEmbedding):
     def generate(
         self,
         input: str,
-    ) -> List[float]:
+    ) -> str:
         embedding = openai.Embedding.create(input=input, model=self.model)
         return embedding["data"][0]["embedding"]
