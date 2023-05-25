@@ -68,7 +68,7 @@ async def root(question: str):
     try:
         return text2cypher.run(question)
     except Exception as e:
-        return f"Error: {e}"
+        return {"type": "error", "message": e}
 
 
 @ app.get("/text2text")
@@ -82,7 +82,7 @@ async def root(question: str):
         results = text2cypher.run(question)
         return {"output": summarize_results.run(question, results['output']), "generated_cypher": results['generated_cypher']}
     except Exception as e:
-        return f"Error: {e}"
+        return {"type": "error", "message": e}
 
 
 @ app.get("/text2vector")
@@ -96,7 +96,7 @@ async def root(question: str):
         embedding = openai_embedding.generate(question)
         return vector_search.run(embedding)
     except Exception as e:
-        return f"Error: {e}"
+        return {"type": "error", "message": e}
 
 
 @ app.get("/load")
@@ -114,7 +114,7 @@ async def root(dataset: str):
         neo4j_connection.refresh_schema()
         return {"message": "import successful"}
     except Exception as e:
-        return {"message": f"Error: {e}"}
+        return {"type": "error", "message": e}
 
 
 @ app.get("/init")
@@ -125,7 +125,7 @@ async def root():
     try:
         return {"message": neo4j_connection.check_if_empty()}
     except Exception as e:
-        return f"Error: {e}"
+        return {"type": "error", "message": e}
 
 if __name__ == "__main__":
     import uvicorn
