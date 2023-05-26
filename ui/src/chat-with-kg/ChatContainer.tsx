@@ -15,7 +15,7 @@ const loadingMessage: ChatMessageObject = {
 function ChatContainer(props: ChatContainerProps) {
   const { chatMessages = [], loading } = props;
   return (
-    <div className="relative flex flex-col w-full overflow-x-auto rounded-b-box rounded-tr-box">
+    <div className="relative flex flex-col w-full min-w-[800px] overflow-x-auto rounded-b-box rounded-tr-box">
       <div className="flex flex-wrap items-center justify-center gap-2 p-4 overflow-x-hidden bg-top bg-cover preview">
         <div className="flex flex-col w-full gap-2">
           {chatMessages.map((chatMessage) => (
