@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from use_cases.shared.llm.openai import OpenAIChat
 from use_cases.shared.driver.neo4j import Neo4jDatabase
 from use_cases.shared.components.unstructured_data_extractor import (
+    DataExtractor,
     DataExtractorWithSchema,
 )
 from use_cases.shared.components.data_disambiguation import DataDisambiguation
@@ -52,10 +53,14 @@ async def root(payload: Payload):
     if not payload:
         return "missing request body"
     try:
-        extractor = DataExtractorWithSchema(llm=llm)
-        result = []
+        result = ""
 
-        result = extractor.run(schema=payload.neo4j_schema, data=payload.input)
+        if payload.neo4j_schema == "" or payload.neo4j_schema == None:
+            extractor = DataExtractor(llm=llm)
+            result = extractor.run(data=payload.input)
+        else:
+            extractor = DataExtractorWithSchema(llm=llm)
+            result = extractor.run(schema=payload.neo4j_schema, data=payload.input)
 
         print("Extracted result: " + str(result))
 

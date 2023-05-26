@@ -1,7 +1,8 @@
 from typing import List
 
+from use_cases.shared.llm.basellm import BaseLLM
+
 from .base_component import BaseComponent
-import tiktoken
 
 
 def generate_system_message_with_schema() -> str:
@@ -41,34 +42,22 @@ Schema: {schema}
 Data: {data}"""
 
 
-def num_tokens_from_string(string: str, encoding_name: str) -> int:
-    """Returns the number of tokens in a text string."""
-    encoding = tiktoken.get_encoding(encoding_name)
-    num_tokens = len(encoding.encode(string))
-    return num_tokens
-
-
 def splitString(string, max_length) -> List[str]:
     return [string[i : i + max_length] for i in range(0, len(string), max_length)]
 
 
 def splitStringToFitTokenSpace(
-    string, max_tokens, message_tokens, encoding_name, extra_tokens=0
+    llm: BaseLLM, string: str, token_use_per_string: int
 ) -> List[str]:
-    prompt_string = generate_system_message() + generate_prompt("")
-    prompt_tokens = num_tokens_from_string(prompt_string, encoding_name)
-    allowed_tokens = max_tokens - prompt_tokens - message_tokens - extra_tokens
+    allowed_tokens = llm.max_tokens() - token_use_per_string
     chunked_data = splitString(string, 500)
-    print("before")
-    print(len(chunked_data))
-
     combined_chunks = []
 
     current_chunk = ""
     for chunk in chunked_data:
         if (
-            num_tokens_from_string(current_chunk, encoding_name)
-            + num_tokens_from_string(chunk, encoding_name)
+            llm.num_tokens_from_string(current_chunk)
+            + llm.num_tokens_from_string(chunk)
             < allowed_tokens
         ):
             current_chunk += chunk
@@ -77,19 +66,24 @@ def splitStringToFitTokenSpace(
             current_chunk = chunk
     combined_chunks.append(current_chunk)
 
-    print("after")
-    print(len(combined_chunks))
     return combined_chunks
 
 
 class DataExtractor(BaseComponent):
-    def __init__(self, llm) -> None:
+    llm: BaseLLM
+
+    def __init__(self, llm: BaseLLM) -> None:
         self.llm = llm
 
     def run(self, data: str) -> List[str]:
-        encoding_name = tiktoken.encoding_for_model(self.llm.model).name
-        chunked_data = splitStringToFitTokenSpace(data, 4096, 1100, encoding_name, 0)
-
+        system_message = generate_system_message()
+        prompt_string = generate_prompt("")
+        token_usage_per_prompt = self.llm.num_tokens_from_string(
+            system_message + prompt_string
+        )
+        chunked_data = splitStringToFitTokenSpace(
+            llm=self.llm, string=data, token_use_per_string=token_usage_per_prompt
+        )
         result = []
         for chunk in chunked_data:
             messages = [
@@ -102,24 +96,30 @@ class DataExtractor(BaseComponent):
 
 
 class DataExtractorWithSchema(BaseComponent):
+    llm: BaseLLM
+
     def __init__(self, llm) -> None:
         self.llm = llm
 
     def run(self, data: str, schema: str) -> List[str]:
-        encoding_name = tiktoken.encoding_for_model(self.llm.model).name
+        system_message = generate_system_message_with_schema()
+        prompt_string = (
+            generate_system_message_with_schema()
+            + generate_prompt_with_schema(schema=schema, data="")
+        )
+        token_usage_per_prompt = self.llm.num_tokens_from_string(
+            system_message + prompt_string
+        )
+
         chunked_data = splitStringToFitTokenSpace(
-            data,
-            4096,
-            1100,
-            encoding_name,
-            num_tokens_from_string(schema, encoding_name),
+            llm=self.llm, string=data, token_use_per_string=token_usage_per_prompt
         )
         result = []
         for chunk in chunked_data:
             messages = [
                 {
                     "role": "system",
-                    "content": generate_system_message_with_schema(),
+                    "content": system_message,
                 },
                 {"role": "user", "content": generate_prompt_with_schema(chunk, schema)},
             ]
