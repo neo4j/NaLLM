@@ -6,7 +6,7 @@ import { fetchQuestionAnswer } from "./utils/fetch-utils";
 
 const SEND_REQUESTS = true;
 
-const chatMessageObjects: ChatMessageObject[] = [
+const chatMessageObjects: ChatMessageObject[] = SEND_REQUESTS ? [] : [
   {
     id: 0,
     type: "input",
