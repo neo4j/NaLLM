@@ -6,7 +6,7 @@ type JSONResponse = {
 export const runImport = async (input: string, schema?: string) => {
   console.log("sending body", JSON.stringify({ input, neo4j_schema: schema }));
   const response = await fetch(
-    `${import.meta.env.VITE_UNSTRUCTUED_IMPORT_BACKEND_ENDPOINT}/data2cypher`,
+    `${import.meta.env.VITE_UNSTRUCTURED_IMPORT_BACKEND_ENDPOINT}/data2cypher`,
     {
       method: "POST",
       headers: {
