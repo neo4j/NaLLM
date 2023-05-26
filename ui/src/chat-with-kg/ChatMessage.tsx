@@ -13,20 +13,20 @@ function ChatMessage(props: ChatMessageProps) {
   const { chatMessage } = props;
   const { type, message, sender } = chatMessage;
   const chatClass = `flex flex-row relative max-w-full ${
-    sender !== "bot" ? "self-start mr-10" : "ml-10 self-end"
+    sender === "bot" ? "self-start mr-10" : "ml-10 self-end"
   }`;
 
   return (
     <div className={chatClass}>
-      {sender !== "bot" && <ChatMessageTail side="left" />}
+      {sender === "bot" && <ChatMessageTail side="left" />}
       <div
         className={`min-w-0 px-4  py-2 rounded-t-lg  bg-palette-neutral-bg-strongest text-palette-neutral-text-inverse break-all ${
-          sender !== "bot" ? "rounded-br-lg" : "rounded-bl-lg"
+          sender === "bot" ? "rounded-br-lg" : "rounded-bl-lg"
         }`}
       >
         {message}
       </div>
-      {sender !== "self" && <ChatMessageTail side="right" />}
+      {sender === "self" && <ChatMessageTail side="right" />}
     </div>
   );
 }
