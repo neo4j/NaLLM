@@ -6,9 +6,23 @@ from typing import (
 
 class BaseLLM(ABC):
     """LLM wrapper should take in a prompt and return a string."""
+
     @abstractmethod
     async def generate(
         self,
         messages: List[str],
     ) -> str:
         """Comment"""
+
+    @abstractmethod
+    async def num_tokens_from_string(
+        self,
+        string: str,
+    ) -> str:
+        """Given a string returns the number of tokens the given string consists of"""
+
+    @abstractmethod
+    async def max_tokens(
+        self,
+    ) -> int:
+        """Returns the maximum number of tokens the LLM can handle"""
