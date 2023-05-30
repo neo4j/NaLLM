@@ -6,7 +6,9 @@ from .base_component import BaseComponent
 
 
 class Text2Cypher(BaseComponent):
-    def __init__(self, llm: BaseLLM, database: Neo4jDatabase, schema: bool, cypher_examples: str) -> None:
+    def __init__(
+        self, llm: BaseLLM, database: Neo4jDatabase, schema: bool, cypher_examples: str
+    ) -> None:
         self.llm = llm
         self.database = database
         self.cypher_examples = cypher_examples
@@ -38,7 +40,7 @@ class Text2Cypher(BaseComponent):
                      """
         return system
 
-    def construct_cypher(self, question:str) -> str:
+    def construct_cypher(self, question: str) -> str:
         messages = [
             {"role": "system", "content": self.get_system_message()},
             {"role": "user", "content": question},
@@ -46,17 +48,19 @@ class Text2Cypher(BaseComponent):
         cypher = self.llm.generate(messages)
         return cypher
 
-    def run(self, question:str) -> Dict[str,Union[str, List[Dict[str, str]]]]:
+    def run(self, question: str) -> Dict[str, Union[str, List[Dict[str, str]]]]:
         cypher = self.construct_cypher(question)
+        print("Cypher: ", cypher)
         # Check if Cypher was constructed or the model couldn't finish the task
         if not "MATCH" in cypher:
-            return {"output": cypher,
-                    "generated_cypher": None}
-        
+            return {"output": cypher, "generated_cypher": None}
+
         print(cypher)
         try:
-            return {"output": self.database.query(cypher),
-                    "generated_cypher": cypher}
+            return {
+                "output": self.database.query(cypher),
+                "generated_cypher": cypher,
+            }
         except ValueError as e:
             # Do something better
             print(e)

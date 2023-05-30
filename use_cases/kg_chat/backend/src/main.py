@@ -1,12 +1,15 @@
 import sys
 import os
 from pathlib import Path
+import asyncio
+from dotenv import load_dotenv
+
 
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[4]
 sys.path.append(str(project_root))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from use_cases.shared.embedding.openai import OpenAIEmbedding
@@ -23,7 +26,9 @@ class Payload(BaseModel):
 
 
 cypher = {}
-cypher['arxiv'] = """
+cypher[
+    "arxiv"
+] = """
 CREATE CONSTRAINT IF NOT EXISTS FOR (p:Paper) REQUIRE p.id IS UNIQUE;
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/arxiv/arxiv.csv" AS row
 MERGE (p:Paper {id: row.paper_id})
@@ -38,28 +43,27 @@ SET p.embedding = row.embedding;"""
 
 
 neo4j_connection = Neo4jDatabase(
-    host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
-    user=os.environ.get("NEO4J_USER", "neo4j"),
-    password=os.environ.get(
-        "NEO4J_PASS", "pleaseletmein")
+    host="bolt://neo4j:7687", user="neo4j", password="pleaseletmein"
 )
 
+
 openai_api_key = os.environ.get(
-    "OPENAI_API_KEY", "")
+    "OPENAI_API_KEY", "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"
+)
 
 llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo")
 
-text2cypher = Text2Cypher(database=neo4j_connection,
-                          llm=llm,
-                          schema=True,
-                          cypher_examples="")
+text2cypher = Text2Cypher(
+    database=neo4j_connection, llm=llm, schema=True, cypher_examples=""
+)
 
 summarize_results = SummarizeCypherResult(llm=llm)
 
 openai_embedding = OpenAIEmbedding(openai_api_key=openai_api_key)
 
 vector_search = VectorSearch(
-    database=neo4j_connection, label="Paper", property="embedding", k=3)
+    database=neo4j_connection, label="Paper", property="embedding", k=3
+)
 
 app = FastAPI()
 
@@ -75,7 +79,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@ app.get("/text2cypher")
+
+@app.get("/text2cypher")
 async def root(question: str):
     """
     Takes an input and returns results from the database
@@ -85,7 +90,8 @@ async def root(question: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@ app.post("/text2cypher")
+
+@app.post("/text2cypher")
 async def root(payload: Payload):
     """
     Takes an input and returns results from the database
@@ -97,7 +103,8 @@ async def root(payload: Payload):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@ app.get("/text2text")
+
+@app.get("/text2text")
 async def root(payload: Payload):
     """
     Takes an input and returns natural language generate response
@@ -106,11 +113,15 @@ async def root(payload: Payload):
         return {"detail": "missing request body"}
     try:
         results = text2cypher.run(payload.question)
-        return {"output": summarize_results.run(payload.question, results['output']), "generated_cypher": results['generated_cypher']}
+        return {
+            "output": summarize_results.run(payload.question, results["output"]),
+            "generated_cypher": results["generated_cypher"],
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@ app.post("/text2text")
+
+@app.post("/text2text")
 async def root(payload: Payload):
     """
     Takes an input and returns natural language generate response
@@ -119,11 +130,80 @@ async def root(payload: Payload):
         return {"detail": "missing request body"}
     try:
         results = text2cypher.run(payload.question)
-        return {"output": summarize_results.run(payload.question, results['output']), "generated_cypher": results['generated_cypher']}
+        return {
+            "output": summarize_results.run(payload.question, results["output"]),
+            "generated_cypher": results["generated_cypher"],
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@ app.get("/text2vector")
+
+@app.websocket("/text2text")
+async def websocket_endpoint(websocket: WebSocket):
+    async def sendDebugMessage(message):
+        await websocket.send_json({"type": "debug", "detail": message})
+
+    async def sendErrorMessage(message):
+        await websocket.send_json({"type": "error", "detail": message})
+
+    async def onToken(token):
+        delta = token["choices"][0]["delta"]
+        if "content" not in delta:
+            return
+        content = delta["content"]
+        if token["choices"][0]["finish_reason"] == "stop":
+            await websocket.send_json({"type": "end", "output": content})
+        else:
+            await websocket.send_json({"type": "stream", "output": content})
+
+        # await websocket.send_json({"token": token})
+
+    await websocket.accept()
+    await sendDebugMessage("connected")
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            if "type" not in data:
+                await websocket.send_json({"error": "missing type"})
+                continue
+            if data["type"] == "question":
+                try:
+                    question = data["question"]
+                    await sendDebugMessage("received question: " + question)
+                    results = text2cypher.run(question)
+                    await sendDebugMessage(results)
+                    print(results)
+                    if results == None:
+                        await sendErrorMessage("Could not generate Cypher statement")
+                        continue
+
+                    await websocket.send_json(
+                        {
+                            "type": "start",
+                        }
+                    )
+                    output = await summarize_results.run_async(
+                        question,
+                        results["output"],
+                        callback=onToken,
+                    )
+                    await websocket.send_json(
+                        {
+                            "type": "end",
+                            "output": output,
+                            "generated_cypher": results["generated_cypher"],
+                        }
+                    )
+                except Exception as e:
+                    await sendErrorMessage(e)
+                    raise HTTPException(status_code=500, detail=str(e))
+                await sendDebugMessage("output done")
+    except WebSocketDisconnect:
+        print("disconnected")
+
+
+@app.get("/text2vector")
 async def root(question: str):
     """
     Takes an input and embeds it with OpenAI model, then performs a vector search
@@ -134,7 +214,8 @@ async def root(question: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@ app.post("/text2vector")
+
+@app.post("/text2vector")
 async def root(question: str):
     """
     Takes an input and embeds it with OpenAI model, then performs a vector search
@@ -145,7 +226,8 @@ async def root(question: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@ app.get("/load")
+
+@app.get("/load")
 async def root(dataset: str):
     """
     Constructs appropriate indexes and import relevant dataset into Neo4j
@@ -161,7 +243,7 @@ async def root(dataset: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@ app.get("/init")
+@app.get("/init")
 async def root():
     """
     Checks if the database is empty
@@ -171,6 +253,8 @@ async def root():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=7860)
