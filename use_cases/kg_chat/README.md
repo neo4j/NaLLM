@@ -6,10 +6,24 @@ If you are not using a Sandbox instance, make sure you have APOC and GDS librari
 
 ## Setup
 
-* Create `.env` file
-* Populate Neo4j and OpenAI credentials in the `.env` as shown in the `.env.example`
-* Start the project by running `docker-compose up`
-* Open your favorite internet browser at TBD
+- Create `.env` file
+- Populate Neo4j and OpenAI credentials in the `.env` as shown in the `.env.example`
+- Start the project by running `docker-compose up`
+- Open your favorite internet browser at TBD
+
+## API
+
+The API is designed to be used with the following endpoints:
+
+### /text2text/ (POST, QUERY, WS)
+
+Takes a POST request with a JSON body containing the following fields:
+
+question: The question to be answered
+
+Can also be used as a query parameter or as a websocket endpoint. The websocket endpoint takes a json object with the following fields:
+type: "question" (only supported type for now)
+question: The question to be answered
 
 ## Dataset
 
