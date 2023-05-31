@@ -160,6 +160,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     await websocket.accept()
     await sendDebugMessage("connected")
+    chatHistory = []
     try:
         while True:
             data = await websocket.receive_json()
@@ -170,13 +171,13 @@ async def websocket_endpoint(websocket: WebSocket):
             if data["type"] == "question":
                 try:
                     question = data["question"]
+                    chatHistory.append({"role": "user", "content": question})
                     await sendDebugMessage("received question: " + question)
                     results = None
                     try:
-                        results = text2cypher.run(question)
+                        results = text2cypher.run(question, chatHistory)
                         print("results", results)
                     except Exception as e:
-                        print("iufuiahfhuiaifhuhui")
                         await sendErrorMessage(e)
                         continue
                     await sendDebugMessage(results)
@@ -195,6 +196,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         results["output"],
                         callback=onToken,
                     )
+                    chatHistory.append({"role": "system", "content": output})
                     await websocket.send_json(
                         {
                             "type": "end",
