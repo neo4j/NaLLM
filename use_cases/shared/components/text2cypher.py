@@ -17,8 +17,8 @@ class Text2Cypher(BaseComponent):
 
     def get_system_message(self) -> str:
         system = """
-        Task: Generate Cypher queries to query a Neo4j graph database.
-        Instructions:
+        Your only task is to generate Cypher queries to query a Neo4j graph database.
+        You will get questions about the database that you should convert to a Cypher query.
         Use only the provided relationship types and properties.
         Do not use any other relationship types or properties that are not provided.
         """

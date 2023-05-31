@@ -11,3 +11,9 @@ class BaseComponent(ABC):
         input: Union[str, List[float]],
     ) -> str:
         """Comment"""
+
+    def run_async(
+        self,
+        input: Union[str, List[float]],
+    ) -> str:
+        """Comment"""

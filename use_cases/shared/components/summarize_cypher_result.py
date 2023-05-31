@@ -37,7 +37,6 @@ class SummarizeCypherResult(BaseComponent):
             {"role": "user", "content": generate_user_prompt(question, results)},
         ]
 
-        print("not stream")
         output = self.llm.generate(messages)
         print(output)
         return output

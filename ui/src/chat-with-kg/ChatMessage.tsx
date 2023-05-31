@@ -3,6 +3,7 @@ export type ChatMessageObject = {
   type: "input" | "text" | "error";
   message: string;
   sender: "bot" | "self";
+  complete: boolean;
 };
 
 export type ChatMessageProps = {

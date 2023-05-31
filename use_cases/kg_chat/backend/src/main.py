@@ -42,14 +42,18 @@ MATCH (p:Paper {id: row.paper_id})
 SET p.embedding = row.embedding;"""
 
 
+print(os.environ.get("NEO4J_URL", "bolt://neo4j:7687"))
+print(os.environ.get("NEO4J_USER", "neo4j"))
+print(os.environ.get("NEO4J_PASS", "pleaseletmein"))
+
 neo4j_connection = Neo4jDatabase(
-    host="bolt://neo4j:7687", user="neo4j", password="pleaseletmein"
+    host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
+    user=os.environ.get("NEO4J_USER", "neo4j"),
+    password=os.environ.get("NEO4J_PASS", "pleaseletmein"),
 )
 
 
-openai_api_key = os.environ.get(
-    "OPENAI_API_KEY", "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"
-)
+openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
 llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo")
 
@@ -197,7 +201,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     )
                 except Exception as e:
                     await sendErrorMessage(e)
-                    raise HTTPException(status_code=500, detail=str(e))
                 await sendDebugMessage("output done")
     except WebSocketDisconnect:
         print("disconnected")

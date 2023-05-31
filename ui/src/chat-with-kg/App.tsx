@@ -3,7 +3,7 @@ import ChatContainer from "./ChatContainer";
 import type { ChatMessageObject } from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import useWebSocket, { ReadyState } from "react-use-websocket";
-import {
+import type {
   ConversationState,
   WebSocketRequest,
   WebSocketResponse,
@@ -20,6 +20,7 @@ const chatMessageObjects: ChatMessageObject[] = SEND_REQUESTS
         sender: "self",
         message:
           "This is the first message which has decently long text and would denote something typed by the user",
+        complete: true,
       },
       {
         id: 1,
@@ -27,10 +28,11 @@ const chatMessageObjects: ChatMessageObject[] = SEND_REQUESTS
         sender: "bot",
         message:
           "And here is another message which would denote a response from the server, which for now will only be text",
+        complete: true,
       },
     ];
 
-const URL =
+const URI =
   import.meta.env.VITE_KG_CHAT_BACKEND_ENDPOINT ??
   "ws://localhost:7860/text2text";
 
@@ -38,7 +40,11 @@ function App() {
   const [chatMessages, setChatMessages] = useState(chatMessageObjects);
   const [conversationState, setConversationState] =
     useState<ConversationState>("ready");
-  const { sendJsonMessage, lastMessage, readyState } = useWebSocket(URL);
+  const { sendJsonMessage, lastMessage, readyState } = useWebSocket(URI, {
+    shouldReconnect: () => true,
+    reconnectInterval: 5000,
+  });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!lastMessage) {
@@ -46,12 +52,12 @@ function App() {
     }
 
     const websocketResponse = JSON.parse(lastMessage.data) as WebSocketResponse;
-    console.log(websocketResponse);
 
     if (websocketResponse.type === "debug") {
       console.log(websocketResponse.detail);
     } else if (websocketResponse.type === "error") {
       setConversationState("error");
+      setErrorMessage(websocketResponse.detail);
       console.error(websocketResponse.detail);
     } else if (websocketResponse.type === "start") {
       setConversationState("streaming");
@@ -63,6 +69,7 @@ function App() {
           type: "text",
           sender: "bot",
           message: "",
+          complete: false,
         },
       ]);
     } else if (websocketResponse.type === "stream") {
@@ -79,9 +86,29 @@ function App() {
         ];
       });
     } else if (websocketResponse.type === "end") {
+      setChatMessages((chatMessages) => {
+        const lastChatMessage = chatMessages[chatMessages.length - 1];
+        const rest = chatMessages.slice(0, -1);
+        return [
+          ...rest,
+          {
+            ...lastChatMessage,
+            complete: true,
+          },
+        ];
+      });
       setConversationState("ready");
     }
-  }, [lastMessage, setConversationState, setChatMessages]);
+  }, [lastMessage]);
+
+  useEffect(() => {
+    if (conversationState === "error") {
+      const timeout = setTimeout(() => {
+        setConversationState("ready");
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [conversationState]);
 
   const sendQuestion = (question: string) => {
     const webSocketRequest: WebSocketRequest = {
@@ -92,7 +119,6 @@ function App() {
   };
 
   const onChatInput = (message: string) => {
-    console.log("chat input");
     if (conversationState === "ready") {
       setChatMessages((chatMessages) =>
         chatMessages.concat([
@@ -101,6 +127,7 @@ function App() {
             type: "input",
             sender: "self",
             message: message,
+            complete: true,
           },
         ])
       );
@@ -114,7 +141,7 @@ function App() {
   return (
     <div className="flex flex-col min-w-[800px] min-h-[100vh] bg-palette-neutral-bg-strong">
       <div className="p-6 mx-auto mt-20 rounded-lg bg-palette-neutral-bg-weak min-h-[6rem] min-w-[18rem] max-w-4xl ">
-        {readyState === ReadyState.OPEN ? (
+        {readyState === ReadyState.OPEN && (
           <>
             <ChatContainer
               chatMessages={chatMessages}
@@ -124,9 +151,14 @@ function App() {
               onChatInput={onChatInput}
               loading={conversationState === "waiting"}
             />
+            {errorMessage}
           </>
-        ) : (
-          <div>Connecting...</div>
+        )}{" "}
+        {readyState === ReadyState.CONNECTING && <div>Connecting...</div>}
+        {readyState === ReadyState.CLOSED && (
+          <div className="flex flex-col">
+            <div>Could not connect to server, reconnecting...</div>
+          </div>
         )}
       </div>
     </div>
