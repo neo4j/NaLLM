@@ -17,8 +17,7 @@ class Text2Cypher(BaseComponent):
 
     def get_system_message(self) -> str:
         system = """
-        Your only task is to generate Cypher queries to query a Neo4j graph database.
-        You will get questions about the database that you should convert to a Cypher query.
+        Your task is to convert questions about contents in a Neo4j database to Cypher queries to query the Neo4j database.
         Use only the provided relationship types and properties.
         Do not use any other relationship types or properties that are not provided.
         """
@@ -38,6 +37,7 @@ class Text2Cypher(BaseComponent):
                      Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
                      Do not include any text except the generated Cypher statement.
                      """
+        system += "Question to be converted to Cypher:"
         return system
 
     def construct_cypher(self, question: str) -> str:

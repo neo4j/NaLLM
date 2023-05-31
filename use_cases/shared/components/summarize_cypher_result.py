@@ -38,7 +38,6 @@ class SummarizeCypherResult(BaseComponent):
         ]
 
         output = self.llm.generate(messages)
-        print(output)
         return output
 
     async def run_async(

@@ -42,10 +42,6 @@ MATCH (p:Paper {id: row.paper_id})
 SET p.embedding = row.embedding;"""
 
 
-print(os.environ.get("NEO4J_URL", "bolt://neo4j:7687"))
-print(os.environ.get("NEO4J_USER", "neo4j"))
-print(os.environ.get("NEO4J_PASS", "pleaseletmein"))
-
 neo4j_connection = Neo4jDatabase(
     host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
     user=os.environ.get("NEO4J_USER", "neo4j"),
@@ -175,7 +171,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 try:
                     question = data["question"]
                     await sendDebugMessage("received question: " + question)
-                    results = text2cypher.run(question)
+                    results = None
+                    try:
+                        results = text2cypher.run(question)
+                        print("results", results)
+                    except Exception as e:
+                        print("iufuiahfhuiaifhuhui")
+                        await sendErrorMessage(e)
+                        continue
                     await sendDebugMessage(results)
                     print(results)
                     if results == None:

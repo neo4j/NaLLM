@@ -45,7 +45,6 @@ class OpenAIChat(BaseLLM):
         messages: List[str],
         onTokenCallback=Callable[[str], None],
     ) -> str:
-        print("streaming")
         result = []
         completions = openai.ChatCompletion.create(
             model=self.model,
@@ -54,12 +53,9 @@ class OpenAIChat(BaseLLM):
             messages=messages,
             stream=True,
         )
-        print("streaming2")
         result = []
         for message in completions:
             # Process the streamed messages or perform any other desired action
-            # print(f"Received message: {message['message']['content']}")
-            print(message)
             delta = message["choices"][0]["delta"]
             if "content" in delta:
                 result.append(delta["content"])
