@@ -135,6 +135,7 @@ function App() {
         setConversationState("waiting");
         sendQuestion(message);
       }
+      setErrorMessage(null);
     }
   };
 
