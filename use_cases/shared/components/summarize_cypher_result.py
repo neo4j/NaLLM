@@ -1,6 +1,8 @@
-from typing import Dict
-
+import asyncio
+from typing import Awaitable, Callable, Dict, Any
 from .base_component import BaseComponent
+from use_cases.shared.llm.basellm import BaseLLM
+
 
 system = f"""
 You are an assistant that helps to generate text to form nice and human understandable answers based.
@@ -20,16 +22,33 @@ def generate_user_prompt(question, results) -> str:
 
 
 class SummarizeCypherResult(BaseComponent):
+    llm: BaseLLM
+
     def __init__(self, llm) -> None:
         self.llm = llm
 
-    def run(self, question, results) -> Dict[str, str]:
+    def run(
+        self,
+        question,
+        results,
+    ) -> Dict[str, str]:
         messages = [
             {"role": "system", "content": system},
-            {"role": "user", "content": generate_user_prompt(
-                question, results)},
+            {"role": "user", "content": generate_user_prompt(question, results)},
         ]
-        print(messages)
+
         output = self.llm.generate(messages)
-        print(output)
         return output
+
+    async def run_async(
+        self,
+        question,
+        results,
+        callback: Callable[[str], Awaitable[Any]] = None,
+    ) -> Dict[str, str]:
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": generate_user_prompt(question, results)},
+        ]
+        output = await self.llm.generateStreaming(messages, onTokenCallback=callback)
+        return "".join(output)

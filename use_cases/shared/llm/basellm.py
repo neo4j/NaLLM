@@ -1,17 +1,25 @@
 from abc import ABC, abstractmethod
 from typing import (
     List,
+    Any,
 )
+
+
+def raise_(ex):
+    raise ex
 
 
 class BaseLLM(ABC):
     """LLM wrapper should take in a prompt and return a string."""
 
     @abstractmethod
-    async def generate(
-        self,
-        messages: List[str],
-    ) -> str:
+    def generate(self, messages: List[str]) -> str:
+        """Comment"""
+
+    @abstractmethod
+    async def generateStreaming(
+        self, messages: List[str], onTokenCallback
+    ) -> List[Any]:
         """Comment"""
 
     @abstractmethod

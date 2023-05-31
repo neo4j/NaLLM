@@ -1,6 +1,8 @@
 import openai
 from retry import retry
 from typing import (
+    Any,
+    Callable,
     List,
 )
 import tiktoken
@@ -37,6 +39,28 @@ class OpenAIChat(BaseLLM):
         except Exception as e:
             print(f"Retrying LLM call {e}")
             raise Exception()
+
+    async def generateStreaming(
+        self,
+        messages: List[str],
+        onTokenCallback=Callable[[str], None],
+    ) -> str:
+        result = []
+        completions = openai.ChatCompletion.create(
+            model=self.model,
+            temperature=0.0,
+            max_tokens=1000,
+            messages=messages,
+            stream=True,
+        )
+        result = []
+        for message in completions:
+            # Process the streamed messages or perform any other desired action
+            delta = message["choices"][0]["delta"]
+            if "content" in delta:
+                result.append(delta["content"])
+            await onTokenCallback(message)
+        return result
 
     def num_tokens_from_string(self, string: str) -> int:
         encoding = tiktoken.encoding_for_model(self.model)
