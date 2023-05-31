@@ -45,7 +45,7 @@ services:
       context: ../../
       dockerfile: ./ui/Dockerfile
     environment:
-      - VITE_KG_CHAT_BACKEND_ENDPOINT=http://kg-chat-backend:7860
+      - VITE_KG_CHAT_BACKEND_ENDPOINT=ws://kg-chat-backend:7860/text2text
     hostname: kg-chat-frontend
     restart: always
     container_name: kg-chat-frontend
