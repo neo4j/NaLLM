@@ -10,6 +10,7 @@ const loadingMessage: ChatMessageObject = {
   type: "text",
   message: "Loading...",
   sender: "bot",
+  complete: true,
 };
 
 function ChatContainer(props: ChatContainerProps) {
