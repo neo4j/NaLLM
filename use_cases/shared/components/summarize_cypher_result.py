@@ -7,7 +7,7 @@ from use_cases.shared.llm.basellm import BaseLLM
 system = f"""
 You are an assistant that helps to generate text to form nice and human understandable answers based.
 The latest prompt contains the information, and you need to generate a human readable response based on the given information.
-Make it sound like the information are coming from an AI assistant, but don't add any information.
+Make the answer sound as a response to the question. Do not mention that you based the result on the given information.
 Do not add any additional information that is not explicitly provided in the latest prompt.
 I repeat, do not add any information that is not explicitly given.
 """
