@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 from neo4j import GraphDatabase, exceptions
 
@@ -70,7 +70,7 @@ class Neo4jDatabase:
         self,
         cypher_query: str,
         params: Optional[Dict] = {}
-    ) -> List[Dict[str, str]]:
+    ) -> List[Dict[str, Any]]:
         with self._driver.session() as session:
             try:
                 result = session.run(cypher_query, params)

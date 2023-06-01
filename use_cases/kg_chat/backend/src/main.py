@@ -39,7 +39,7 @@ MERGE (a:Author {name:author})
 MERGE (p)-[:HAS_AUTHOR]->(a);
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/arxiv/arxiv_embedding.csv" AS row
 MATCH (p:Paper {id: row.paper_id})
-SET p.embedding = row.embedding;"""
+SET p.embedding = apoc.convert.fromJsonList(row.embedding);"""
 
 
 neo4j_connection = Neo4jDatabase(
