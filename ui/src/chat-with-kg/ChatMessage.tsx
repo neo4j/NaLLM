@@ -21,7 +21,7 @@ function ChatMessage(props: ChatMessageProps) {
     <div className={chatClass}>
       {sender === "bot" && <ChatMessageTail side="left" />}
       <div
-        className={`min-w-0 px-4  py-2 rounded-t-lg  bg-palette-neutral-bg-strongest text-palette-neutral-text-inverse break-all ${
+        className={`min-w-0 px-4 py-2 rounded-t-lg bg-palette-primary-bg-strong text-palette-neutral-text-inverse break-all ${
           sender === "bot" ? "rounded-br-lg" : "rounded-bl-lg"
         }`}
       >
@@ -53,7 +53,7 @@ function ChatMessageTail({ side }: { side: "left" | "right" }) {
 
   return (
     <div
-      className="absolute bottom-0 bg-palette-neutral-bg-strongest"
+      className="absolute bottom-0 bg-palette-primary-bg-strong"
       style={chatTailStyle}
     ></div>
   );
