@@ -96,8 +96,6 @@ async def root(payload: Payload):
     """
     Takes an input and returns results from the database
     """
-    if not payload:
-        return {"detail": "missing request body"}
     try:
         return text2cypher.run(payload.question)
     except Exception as e:
@@ -109,8 +107,6 @@ async def root(payload: Payload):
     """
     Takes an input and returns natural language generate response
     """
-    if not payload:
-        return {"detail": "missing request body"}
     try:
         results = text2cypher.run(payload.question)
         return {
@@ -126,8 +122,6 @@ async def root(payload: Payload):
     """
     Takes an input and returns natural language generate response
     """
-    if not payload:
-        return {"detail": "missing request body"}
     try:
         results = text2cypher.run(payload.question)
         return {

@@ -5,6 +5,9 @@ from neo4j import GraphDatabase, exceptions
 from logger import logger
 
 
+HARD_RESULT_LIMIT = 50
+
+
 node_properties_query = """
 CALL apoc.meta.data()
 YIELD label, other, elementType, type, property
@@ -46,10 +49,12 @@ class Neo4jDatabase:
     def __init__(self, host: str = "neo4j://localhost:7687",
                  user: str = "neo4j",
                  password: str = "pleaseletmein",
-                 database: str = "neo4j") -> None:
+                 database: str = "neo4j",
+                 read_only: bool = True) -> None:
         """Initialize a neo4j database"""
         self._driver = GraphDatabase.driver(host, auth=(user, password))
         self._database = database
+        self._read_only = read_only
         self.schema = ""
         # Verify connection
         try:
@@ -65,6 +70,11 @@ class Neo4jDatabase:
                 "Please ensure that the username and password are correct"
             )
         self.refresh_schema()
+    
+    @staticmethod
+    def _execute_read_only_query(tx, cypher_query:str, params:Optional[Dict] = {}):
+        result = tx.run(cypher_query, params)
+        return [r.data() for r in result][:HARD_RESULT_LIMIT]
 
     def query(
         self,
@@ -73,9 +83,18 @@ class Neo4jDatabase:
     ) -> List[Dict[str, Any]]:
         with self._driver.session() as session:
             try:
-                result = session.run(cypher_query, params)
-                # Limit to at most 50 results
-                return [r.data() for r in result][:50]
+                if self._read_only:
+                    result = session.read_transaction(self._execute_read_only_query, cypher_query, params)
+                    return result
+                else:
+                    result = session.run(cypher_query, params)
+                    # Limit to at most 50 results
+                    return [r.data() for r in result][:HARD_RESULT_LIMIT]
+                
+            # Catch access mode errors
+            except exceptions.ClientError:
+                return [{"code": "error", "message": "Couldn't execute the query due to the read only access to Neo4j"}]
+
             except exceptions.CypherSyntaxError as e:
                 raise ValueError(e)
 
