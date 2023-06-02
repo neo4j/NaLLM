@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 
 from ..driver.neo4j import Neo4jDatabase
 from ..llm.basellm import BaseLLM
@@ -56,14 +56,14 @@ class Text2Cypher(BaseComponent):
 
     def run(
         self, question: str, history=[]
-    ) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+    ) -> Dict[str, Union[str, List[Dict[str, Any]]]]:
         cypher = self.construct_cypher(question, history)
         print("Cypher: ", cypher)
-        # finds the first string wrapped in tripple backticks. Where the match include the backticks and the first group in the match is the cypher
+        # finds the first string wrapped in triple backticks. Where the match include the backticks and the first group in the match is the cypher
         match = re.search("```([\w\W]*?)```", cypher)
 
         if match is None:
-            return {"output": cypher, "generated_cypher": None}
+            return {"output": [{"message": cypher}], "generated_cypher": None}
         extracted_cypher = match.group(1)
         print(extracted_cypher)
         try:
