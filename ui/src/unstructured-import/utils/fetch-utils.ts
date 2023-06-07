@@ -1,5 +1,21 @@
+export type NodeType = {
+  label: string;
+  name: string;
+  properties: Record<string, string>;
+};
+
+export type RelationshipType = {
+  type: string;
+  start: string;
+  end: string;
+  properties: Record<string, string>;
+};
+
 type JSONResponse = {
-  data?: string;
+  data?: {
+    nodes: Array<NodeType>;
+    relationships: Array<RelationshipType>;
+  };
   errors?: Array<{ message: string }>;
 };
 

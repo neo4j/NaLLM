@@ -65,13 +65,11 @@ async def root(payload: Payload):
         print("Extracted result: " + str(result))
 
         disambiguation = DataDisambiguation(llm=llm)
-        dis = disambiguation.run(result)
-        print("Disambiguation result " + str(dis))
+        disambiguation_result = disambiguation.run(result)
 
-        csvConverter = DataToCSV(llm=llm)
-        csv = csvConverter.run(dis)
+        print("Disambiguation result " + str(disambiguation_result))
 
-        return {"data": csv}
+        return {"data": disambiguation_result}
 
     except Exception as e:
         print(e)

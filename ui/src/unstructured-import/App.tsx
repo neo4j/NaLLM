@@ -1,14 +1,17 @@
 import "@neo4j-ndl/base/lib/neo4j-ds-styles.css";
 import { useState } from "react";
-import { runImport } from "./utils/fetch-utils";
+import { NodeType, RelationshipType, runImport } from "./utils/fetch-utils";
 import { Switch } from "../components/switch";
-import ReactMarkdown from "react-markdown";
 import { graphSchemaToModelSchema } from "./utils/graph-schema-utils";
+import { dataToCypher } from "./utils/cypher-utils";
 
 function App() {
   const [useSchema, setUseSchema] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    nodes: NodeType[];
+    relationships: RelationshipType[];
+  } | null>(null);
   const [schema, setSchema] = useState<string>("");
 
   const handleImport = async () => {
@@ -94,11 +97,7 @@ function App() {
                 The import was successful. The following nodes and relationships
                 were created:
               </p>
-              <div className="overflow-auto">
-                <ReactMarkdown className="overflow-auto">
-                  {result}
-                </ReactMarkdown>
-              </div>
+              <div className="overflow-auto">{dataToCypher(result)}</div>
             </div>
           ) : null}
         </div>
