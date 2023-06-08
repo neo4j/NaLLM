@@ -4,13 +4,20 @@ Welcome to the NaLLM project repository, where we are exploring and demonstratin
 
 This repository houses both backend and frontend code, designed and organized to facilitate an intuitive journey through our project.
 
+# Blog posts
+
+During this project we're also writing blog posts where we deep dive into our learnings and explorations.
+
+1. https://medium.com/neo4j/harnessing-large-language-models-with-neo4j-306ccbdd2867
+2. https://medium.com/neo4j/knowledge-graphs-llms-fine-tuning-vs-retrieval-augmented-generation-30e875d63a35
+
 ## Repository Structure
 
 Our repository is designed with an efficient and logical structure for ease of navigation:
 
--   **Backend Code**: The backend code is categorized based on use cases. This allows you to delve directly into the area of your interest and understand the mechanics at work behind the scenes.
+- **Backend Code**: The backend code is categorized based on use cases. This allows you to delve directly into the area of your interest and understand the mechanics at work behind the scenes.
 
--   **Frontend Code**: The frontend code is organized more generically, enabling you to understand the common interface aspects that span across different use cases.
+- **Frontend Code**: The frontend code is organized more generically, enabling you to understand the common interface aspects that span across different use cases.
 
 ## Running the Demos
 
