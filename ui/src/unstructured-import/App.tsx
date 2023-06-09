@@ -93,8 +93,7 @@ function App() {
             <div className="flex flex-col w-2/3 gap-2 mx-auto">
               <h1 className="text-4xl font-bold text-center">Result</h1>
               <p>
-                The import was successful. The following nodes and relationships
-                were created:
+                The import was successful. You can save the result as a cypher.
               </p>
               <button
                 className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong"
