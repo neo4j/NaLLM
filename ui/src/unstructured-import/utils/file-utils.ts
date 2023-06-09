@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { saveAs } from "file-saver";
+import FileSaver, { saveAs } from "file-saver";
 import { ImportResult } from "../types/respons-types";
 import { dataToCypher } from "./cypher-utils";
 
@@ -29,4 +29,6 @@ export const saveImportResult = (importResult: string) => {
 export const saveCypherResult = (importResult: ImportResult) => {
   const fileName = "neo4j_unstructured_import.cypher";
   const cypher = dataToCypher(importResult);
+  const cypherBlob = new Blob([cypher], { type: "text/plain;charset=utf-8" });
+  FileSaver.saveAs(cypherBlob, fileName);
 };

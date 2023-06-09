@@ -5,6 +5,7 @@ import { Switch } from "../components/switch";
 import { graphSchemaToModelSchema } from "./utils/graph-schema-utils";
 import { dataToCypher } from "./utils/cypher-utils";
 import { ImportResult } from "./types/respons-types";
+import { saveCypherResult } from "./utils/file-utils";
 
 function App() {
   const [useSchema, setUseSchema] = useState(false);
@@ -95,7 +96,10 @@ function App() {
                 The import was successful. The following nodes and relationships
                 were created:
               </p>
-              <button className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong">
+              <button
+                className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong"
+                onClick={() => saveCypherResult(result)}
+              >
                 Save as Cypher
               </button>
             </div>
