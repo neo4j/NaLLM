@@ -1,4 +1,4 @@
-import { NodeType, RelationshipType } from "./fetch-utils";
+import { NodeType, RelationshipType } from "../types/respons-types";
 
 function createNodeStatement(node: NodeType) {
   const properties = Object.entries(node.properties);
