@@ -1,21 +1,7 @@
-export type NodeType = {
-  label: string;
-  name: string;
-  properties: Record<string, string>;
-};
-
-export type RelationshipType = {
-  type: string;
-  start: string;
-  end: string;
-  properties: Record<string, string>;
-};
+import { ImportResult } from "../types/respons-types";
 
 type JSONResponse = {
-  data?: {
-    nodes: Array<NodeType>;
-    relationships: Array<RelationshipType>;
-  };
+  data?: ImportResult;
   errors?: Array<{ message: string }>;
 };
 

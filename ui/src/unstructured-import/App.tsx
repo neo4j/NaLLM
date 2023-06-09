@@ -1,17 +1,15 @@
 import "@neo4j-ndl/base/lib/neo4j-ds-styles.css";
 import { useState } from "react";
-import { NodeType, RelationshipType, runImport } from "./utils/fetch-utils";
+import { runImport } from "./utils/fetch-utils";
 import { Switch } from "../components/switch";
 import { graphSchemaToModelSchema } from "./utils/graph-schema-utils";
 import { dataToCypher } from "./utils/cypher-utils";
+import { ImportResult } from "./types/respons-types";
 
 function App() {
   const [useSchema, setUseSchema] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{
-    nodes: NodeType[];
-    relationships: RelationshipType[];
-  } | null>(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
   const [schema, setSchema] = useState<string>("");
 
   const handleImport = async () => {
@@ -97,7 +95,9 @@ function App() {
                 The import was successful. The following nodes and relationships
                 were created:
               </p>
-              <div className="overflow-auto">{dataToCypher(result)}</div>
+              <button className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong">
+                Save as Cypher
+              </button>
             </div>
           ) : null}
         </div>
