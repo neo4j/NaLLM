@@ -18,8 +18,7 @@ class OpenAIChat(BaseLLM):
         openai.api_key = openai_api_key
         self.model = model_name
 
-    retry(tries=3, delay=1)
-
+    @retry(tries=3, delay=1)
     def generate(
         self,
         messages: List[str],

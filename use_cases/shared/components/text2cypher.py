@@ -37,6 +37,7 @@ class Text2Cypher(BaseComponent):
         system += """Note: Do not include any explanations or apologies in your responses.
                      Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
                      Do not include any text except the generated Cypher statement. This is very important if you want to get paid.
+                     Always provide enough context for an LLM to be able to generate valid response.
                      Please wrap the generated Cypher statement in triple backticks (`).
                      """
         return system
@@ -47,7 +48,7 @@ class Text2Cypher(BaseComponent):
         messages.append(
             {
                 "role": "user",
-                "content": "Question to be converted to Cypher: " + question,
+                "content": question,
             }
         )
         print(messages)
@@ -55,22 +56,29 @@ class Text2Cypher(BaseComponent):
         return cypher
 
     def run(
-        self, question: str, history=[]
+        self, question: str, history: List = [], heal_cypher:bool = True
     ) -> Dict[str, Union[str, List[Dict[str, Any]]]]:
-        cypher = self.construct_cypher(question, history)
-        print("Cypher: ", cypher)
+        # Add prefix if not part of self-heal loop
+        final_question = "Question to be converted to Cypher: " + question if heal_cypher else question
+        cypher = self.construct_cypher(final_question, history)
         # finds the first string wrapped in triple backticks. Where the match include the backticks and the first group in the match is the cypher
         match = re.search("```([\w\W]*?)```", cypher)
 
+        # If the LLM didn't any Cypher statement (error, missing context, etc..)
         if match is None:
             return {"output": [{"message": cypher}], "generated_cypher": None}
         extracted_cypher = match.group(1)
-        print(extracted_cypher)
-        try:
-            return {
-                "output": self.database.query(extracted_cypher),
-                "generated_cypher": extracted_cypher,
-            }
-        except ValueError as e:
-            # Do something better
-            print(e)
+        print(f"Generated cypher: {extracted_cypher}")
+        
+        output = self.database.query(extracted_cypher)
+        # Catch Cypher syntax error
+        if heal_cypher and output and output[0].get('code') == 'invalid_cypher':
+            syntax_messages = [{"role": "system", "content": self.get_system_message()}]
+            syntax_messages.extend([{'role': 'user', 'content': question}, {'role':'assistant', 'content': cypher}])
+            # Try to heal Cypher syntax only once
+            return self.run(output[0].get('message'), syntax_messages, heal_cypher=False)
+        
+        return {
+            "output": output,
+            "generated_cypher": extracted_cypher,
+        }

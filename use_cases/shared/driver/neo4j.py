@@ -5,7 +5,7 @@ from neo4j import GraphDatabase, exceptions
 from logger import logger
 
 
-HARD_RESULT_LIMIT = 50
+HARD_RESULT_LIMIT = 10
 
 
 node_properties_query = """
@@ -88,15 +88,21 @@ class Neo4jDatabase:
                     return result
                 else:
                     result = session.run(cypher_query, params)
-                    # Limit to at most 50 results
+                    # Limit to at most 10 results
                     return [r.data() for r in result][:HARD_RESULT_LIMIT]
-                
-            # Catch access mode errors
-            except exceptions.ClientError:
-                return [{"code": "error", "message": "Couldn't execute the query due to the read only access to Neo4j"}]
-
+            
+            # Catch Cypher syntax errors
             except exceptions.CypherSyntaxError as e:
-                raise ValueError(e)
+                return [{"code":"invalid_cypher", "message": f"Invalid Cypher statement due to an error: {e}"}]
+                
+            except exceptions.ClientError as e:
+                # Catch access mode errors
+                if e.code == "Neo.ClientError.Statement.AccessMode":
+                    return [{"code": "error", "message": "Couldn't execute the query due to the read only access to Neo4j"}]
+                else:
+                    return [{"code": "error", "message": e}]
+
+
 
 
 
