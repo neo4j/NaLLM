@@ -41,6 +41,7 @@ LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/tomasonjo/blog-dat
 MATCH (p:Paper {id: row.paper_id})
 SET p.embedding = apoc.convert.fromJsonList(row.embedding);"""
 
+HARD_LIMIT_RESULTS = 10
 
 neo4j_connection = Neo4jDatabase(
     host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
@@ -123,7 +124,7 @@ async def root(payload: Payload):
     Takes an input and returns natural language generate response
     """
     try:
-        results = text2cypher.run(payload.question)
+        results = text2cypher.run(payload.question)[:HARD_LIMIT_RESULTS]
         return {
             "output": summarize_results.run(payload.question, results["output"]),
             "generated_cypher": results["generated_cypher"],
