@@ -5,9 +5,6 @@ from neo4j import GraphDatabase, exceptions
 from logger import logger
 
 
-HARD_RESULT_LIMIT = 10
-
-
 node_properties_query = """
 CALL apoc.meta.data()
 YIELD label, other, elementType, type, property
@@ -70,11 +67,11 @@ class Neo4jDatabase:
                 "Please ensure that the username and password are correct"
             )
         self.refresh_schema()
-    
+
     @staticmethod
-    def _execute_read_only_query(tx, cypher_query:str, params:Optional[Dict] = {}):
+    def _execute_read_only_query(tx, cypher_query: str, params: Optional[Dict] = {}):
         result = tx.run(cypher_query, params)
-        return [r.data() for r in result][:HARD_RESULT_LIMIT]
+        return [r.data() for r in result]
 
     def query(
         self,
@@ -84,27 +81,24 @@ class Neo4jDatabase:
         with self._driver.session() as session:
             try:
                 if self._read_only:
-                    result = session.read_transaction(self._execute_read_only_query, cypher_query, params)
+                    result = session.read_transaction(
+                        self._execute_read_only_query, cypher_query, params)
                     return result
                 else:
                     result = session.run(cypher_query, params)
                     # Limit to at most 10 results
                     return [r.data() for r in result][:HARD_RESULT_LIMIT]
-            
+
             # Catch Cypher syntax errors
             except exceptions.CypherSyntaxError as e:
-                return [{"code":"invalid_cypher", "message": f"Invalid Cypher statement due to an error: {e}"}]
-                
+                return [{"code": "invalid_cypher", "message": f"Invalid Cypher statement due to an error: {e}"}]
+
             except exceptions.ClientError as e:
                 # Catch access mode errors
                 if e.code == "Neo.ClientError.Statement.AccessMode":
                     return [{"code": "error", "message": "Couldn't execute the query due to the read only access to Neo4j"}]
                 else:
                     return [{"code": "error", "message": e}]
-
-
-
-
 
     def refresh_schema(self) -> None:
         node_props = [el["output"]
