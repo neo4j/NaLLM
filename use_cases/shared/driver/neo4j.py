@@ -87,7 +87,7 @@ class Neo4jDatabase:
                 else:
                     result = session.run(cypher_query, params)
                     # Limit to at most 10 results
-                    return [r.data() for r in result][:HARD_RESULT_LIMIT]
+                    return [r.data() for r in result]
 
             # Catch Cypher syntax errors
             except exceptions.CypherSyntaxError as e:
