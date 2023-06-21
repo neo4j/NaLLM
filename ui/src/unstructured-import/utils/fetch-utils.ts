@@ -1,5 +1,7 @@
+import { ImportResult } from "../types/respons-types";
+
 type JSONResponse = {
-  data?: string;
+  data?: ImportResult;
   errors?: Array<{ message: string }>;
 };
 

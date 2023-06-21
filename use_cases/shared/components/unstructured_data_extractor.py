@@ -1,8 +1,13 @@
 from typing import List
 
 from use_cases.shared.llm.basellm import BaseLLM
+from use_cases.shared.utils.unstructured_data_utils import (
+    nodesTextToListOfDict,
+    relationshipTextToListOfDict,
+)
 
 from .base_component import BaseComponent
+import re
 
 
 def generate_system_message_with_schema() -> str:
@@ -22,12 +27,14 @@ Relationships: [["Alice", "roommate", "Bob"]]
 def generate_system_message() -> str:
     return """
 You are a data scientist working for a company that is building a graph database. Your task is to extract information from data and convert it into a graph database.
-Provide a set of Nodes in the form [ENTITY, TYPE, PROPERTIES] and a set of relationships in the form [ENTITY1, RELATIONSHIP, ENTITY2, PROPERTIES].
+Provide a set of Nodes in the form [ENTITY_ID, TYPE, PROPERTIES] and a set of relationships in the form [ENTITY_ID_1, RELATIONSHIP, ENTITY_ID_2, PROPERTIES].
+It is important that the ENTITY_ID_1 and ENTITY_ID_2 exists as nodes with a matching ENTITY_ID. If you can't pair a relationship with a pair of nodes don't add it.
+When you find a node or relationship you want to add try to create a generic TYPE for it that  describes the entity you can also think of it as a label.
 
 Example:
-Data: Alice is 25 years old and Bob is her roommate.
-Nodes: [["Alice", "Person", {"age": 25}], ["Bob", "Person"]]
-Relationships: [["Alice", "roommate", "Bob"]]
+Data: Alice lawyer and is 25 years old and Bob is her roommate since 2001. Bob works as a journalist. Alice owns a the webpage www.alice.com and Bob owns the webpage www.bob.com.
+Nodes: ["alice", "Person", {"age": 25, "occupation": "lawyer", "name":"Alice"}], ["bob", "Person", {"occupation": "journalist", "name": "Bob"}], ["alice.com", "Webpage", {"url": "www.alice.com"}], ["bob.com", "Webpage", {"url": "www.bob.com"}]
+Relationships: ["alice", "roommate", "bob", {"start": 2021}], ["alice", "owns", "alice.com", {}], ["bob", "owns", "bob.com", {}]
 """
 
 
@@ -69,6 +76,33 @@ def splitStringToFitTokenSpace(
     return combined_chunks
 
 
+def getNodesAndRelationshipsFromResult(result):
+    regex = "Nodes:\s+(.*?)\s?\s?Relationships:\s+(.*)"
+    internalRegex = "\[(.*?)\]"
+
+    nodes = []
+    relationships = []
+    for row in result:
+        parsing = re.match(regex, row, flags=re.S)
+
+        if parsing == None:
+            continue
+
+        rawNodes = str(parsing.group(1))
+        rawRelationships = parsing.group(2)
+
+        nodes.extend(re.findall(internalRegex, rawNodes))
+        relationships.extend(re.findall(internalRegex, rawRelationships))
+
+    result = dict()
+    result["nodes"] = []
+    result["relationships"] = []
+    result["nodes"].extend(nodesTextToListOfDict(nodes))
+    result["relationships"].extend(relationshipTextToListOfDict(relationships))
+
+    return result
+
+
 class DataExtractor(BaseComponent):
     llm: BaseLLM
 
@@ -92,7 +126,8 @@ class DataExtractor(BaseComponent):
             ]
             output = self.llm.generate(messages)
             result.append(output)
-        return result
+
+        return getNodesAndRelationshipsFromResult(result)
 
 
 class DataExtractorWithSchema(BaseComponent):
@@ -125,4 +160,4 @@ class DataExtractorWithSchema(BaseComponent):
             ]
             output = self.llm.generate(messages)
             result.append(output)
-        return result
+        return getNodesAndRelationshipsFromResult(result)

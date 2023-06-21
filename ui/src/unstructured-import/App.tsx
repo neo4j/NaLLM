@@ -2,13 +2,15 @@ import "@neo4j-ndl/base/lib/neo4j-ds-styles.css";
 import { useState } from "react";
 import { runImport } from "./utils/fetch-utils";
 import { Switch } from "../components/switch";
-import ReactMarkdown from "react-markdown";
 import { graphSchemaToModelSchema } from "./utils/graph-schema-utils";
+import { dataToCypher } from "./utils/cypher-utils";
+import { ImportResult } from "./types/respons-types";
+import { saveCypherResult } from "./utils/file-utils";
 
 function App() {
   const [useSchema, setUseSchema] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
   const [schema, setSchema] = useState<string>("");
 
   const handleImport = async () => {
@@ -91,14 +93,14 @@ function App() {
             <div className="flex flex-col w-2/3 gap-2 mx-auto">
               <h1 className="text-4xl font-bold text-center">Result</h1>
               <p>
-                The import was successful. The following nodes and relationships
-                were created:
+                The import was successful. You can save the result as a cypher.
               </p>
-              <div className="overflow-auto">
-                <ReactMarkdown className="overflow-auto">
-                  {result}
-                </ReactMarkdown>
-              </div>
+              <button
+                className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong"
+                onClick={() => saveCypherResult(result)}
+              >
+                Save as Cypher
+              </button>
             </div>
           ) : null}
         </div>
