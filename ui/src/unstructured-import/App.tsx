@@ -3,9 +3,11 @@ import { useState } from "react";
 import { runImport } from "./utils/fetch-utils";
 import { Switch } from "../components/switch";
 import { graphSchemaToModelSchema } from "./utils/graph-schema-utils";
-import { dataToCypher } from "./utils/cypher-utils";
 import { ImportResult } from "./types/respons-types";
-import { saveCypherResult } from "./utils/file-utils";
+import {
+  saveCypherResult,
+  saveImportResultAsNeo4jImport,
+} from "./utils/file-utils";
 
 function App() {
   const [useSchema, setUseSchema] = useState(false);
@@ -100,6 +102,12 @@ function App() {
                 onClick={() => saveCypherResult(result)}
               >
                 Save as Cypher
+              </button>
+              <button
+                className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong"
+                onClick={() => saveImportResultAsNeo4jImport(result)}
+              >
+                Save as Neo4j Import format
               </button>
             </div>
           ) : null}
