@@ -66,7 +66,11 @@ class Neo4jDatabase:
                 "Could not connect to Neo4j database. "
                 "Please ensure that the username and password are correct"
             )
-        self.refresh_schema()
+        try:
+            self.refresh_schema()
+        except:
+            raise ValueError(
+                "Missing APOC Core plugin")
 
     @staticmethod
     def _execute_read_only_query(tx, cypher_query: str, params: Optional[Dict] = {}):

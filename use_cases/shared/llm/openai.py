@@ -14,9 +14,10 @@ from .basellm import BaseLLM
 class OpenAIChat(BaseLLM):
     """Wrapper around OpenAI Chat large language models."""
 
-    def __init__(self, openai_api_key: str, model_name: str = "gpt-3.5-turbo") -> None:
+    def __init__(self, openai_api_key: str, model_name: str = "gpt-3.5-turbo", max_tokens: int = 1000) -> None:
         openai.api_key = openai_api_key
         self.model = model_name
+        self.max_tokens = max_tokens
 
     @retry(tries=3, delay=1)
     def generate(
@@ -25,9 +26,8 @@ class OpenAIChat(BaseLLM):
     ) -> str:
         try:
             completions = openai.ChatCompletion.create(
-                model=self.model, temperature=0.0, max_tokens=1000, messages=messages
+                model=self.model, temperature=0.0, max_tokens=self.max_tokens, messages=messages
             )
-            print(completions)
             return completions.choices[0].message.content
         # catch context length / do not retry
         except openai.error.InvalidRequestError as e:

@@ -8,12 +8,12 @@ import re
 
 class Text2Cypher(BaseComponent):
     def __init__(
-        self, llm: BaseLLM, database: Neo4jDatabase, schema: bool, cypher_examples: str
+        self, llm: BaseLLM, database: Neo4jDatabase, use_schema: bool = True, cypher_examples: str = ""
     ) -> None:
         self.llm = llm
         self.database = database
         self.cypher_examples = cypher_examples
-        if schema:
+        if use_schema:
             self.schema = database.schema
 
     def get_system_message(self) -> str:
@@ -51,7 +51,7 @@ class Text2Cypher(BaseComponent):
                 "content": question,
             }
         )
-        print(messages)
+        print([el for el in messages if not el['role'] == 'system'])
         cypher = self.llm.generate(messages)
         return cypher
 
