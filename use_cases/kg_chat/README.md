@@ -8,8 +8,9 @@ If you are not using a Sandbox instance, make sure you have APOC and GDS librari
 
 - Create `.env` file
 - Populate Neo4j and OpenAI credentials in the `.env` as shown in the `.env.example`
+  - If you do have an OpenAI API key, you can get one through an [OpenAI Platform Account](https://platform.openai.com/).
 - Start the project by running `docker-compose up`
-- Open your favorite internet browser at TBD
+- Open your favorite internet browser at [localhost:4173/use-cases/chat-with-kg/index.html](http://localhost:4173/use-cases/chat-with-kg/index.html)
 
 ## API
 

@@ -6,7 +6,7 @@ current_file = Path(__file__).resolve()
 project_root = current_file.parents[4]
 sys.path.append(str(project_root))
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from use_cases.shared.components.text2cypher import Text2Cypher
@@ -20,23 +20,42 @@ class Payload(BaseModel):
     question: str
 
 
+cypher = {"arxiv": """
+    CREATE CONSTRAINT IF NOT EXISTS FOR (p:Paper) REQUIRE p.id IS UNIQUE;
+    LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/arxiv/arxiv.csv" AS row
+    MERGE (p:Paper {id: row.paper_id})
+    SET p += apoc.map.clean(row, ["paper_id", "authors"], [])
+    WITH p, row.authors AS authors
+    UNWIND apoc.convert.fromJsonList(authors) as author
+    MERGE (a:Author {name:author})
+    MERGE (p)-[:HAS_AUTHOR]->(a);
+    LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/tomasonjo/blog-datasets/main/arxiv/arxiv_embedding.csv" AS row
+    MATCH (p:Paper {id: row.paper_id})
+    SET p.embedding = apoc.convert.fromJsonList(row.embedding);"""}
+
 # Maximum number of records used in the context
 HARD_LIMIT_CONTEXT_RECORDS = 10
 
-neo4j_connection = Neo4jDatabase(
+neo4j_read_connection = Neo4jDatabase(
     host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
     user=os.environ.get("NEO4J_USER", "neo4j"),
     password=os.environ.get("NEO4J_PASS", "pleaseletmein"),
 )
 
+neo4j_write_connection = Neo4jDatabase(
+    host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
+    user=os.environ.get("NEO4J_USER", "neo4j"),
+    password=os.environ.get("NEO4J_PASS", "pleaseletmein"),
+    read_only=False
+)
 
 # Initialize LLM modules
 openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
 text2cypher = Text2Cypher(
-    database=neo4j_connection, llm=OpenAIChat(
+    database=neo4j_read_connection, llm=OpenAIChat(
         openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613"),
-        cypher_examples=""
+    cypher_examples=""
 )
 
 summarize_results = SummarizeCypherResult(llm=OpenAIChat(
@@ -127,6 +146,35 @@ async def websocket_endpoint(websocket: WebSocket):
                 await sendDebugMessage("output done")
     except WebSocketDisconnect:
         print("disconnected")
+
+
+@app.get("/load")
+async def root(dataset: str):
+    """
+    Constructs appropriate indexes and import relevant dataset into Neo4j
+    """
+    try:
+        queries = cypher[dataset].split(";")
+        for q in queries:
+            if q:
+                res = neo4j_write_connection.query(q)
+                print(res)
+        neo4j_read_connection.refresh_schema()
+        return {"message": "import successful"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/init")
+async def root():
+    """
+    Checks if the database is empty
+    """
+    try:
+        return {"message": neo4j_read_connection.check_if_empty()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

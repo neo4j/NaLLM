@@ -4,7 +4,6 @@ from neo4j import GraphDatabase, exceptions
 
 from logger import logger
 
-
 node_properties_query = """
 CALL apoc.meta.data()
 YIELD label, other, elementType, type, property
@@ -78,9 +77,9 @@ class Neo4jDatabase:
         return [r.data() for r in result]
 
     def query(
-        self,
-        cypher_query: str,
-        params: Optional[Dict] = {}
+            self,
+            cypher_query: str,
+            params: Optional[Dict] = {}
     ) -> List[Dict[str, Any]]:
         with self._driver.session() as session:
             try:
@@ -100,7 +99,8 @@ class Neo4jDatabase:
             except exceptions.ClientError as e:
                 # Catch access mode errors
                 if e.code == "Neo.ClientError.Statement.AccessMode":
-                    return [{"code": "error", "message": "Couldn't execute the query due to the read only access to Neo4j"}]
+                    return [
+                        {"code": "error", "message": "Couldn't execute the query due to the read only access to Neo4j"}]
                 else:
                     return [{"code": "error", "message": e}]
 
