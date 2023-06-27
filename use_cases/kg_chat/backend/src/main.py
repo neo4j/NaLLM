@@ -2,6 +2,7 @@ import sys
 import os
 from pathlib import Path
 
+
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[4]
 sys.path.append(str(project_root))
@@ -11,6 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from use_cases.shared.components.text2cypher import Text2Cypher
 from use_cases.shared.components.summarize_cypher_result import SummarizeCypherResult
+from use_cases.shared.components.question_proposal_generator import (
+    QuestionProposalGenerator,
+)
 from use_cases.shared.driver.neo4j import Neo4jDatabase
 from use_cases.shared.llm.openai import OpenAIChat
 from pydantic import BaseModel
@@ -34,13 +38,26 @@ neo4j_connection = Neo4jDatabase(
 openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
 text2cypher = Text2Cypher(
-    database=neo4j_connection, llm=OpenAIChat(
-        openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613"),
-        cypher_examples=""
+    database=neo4j_connection,
+    llm=OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613"),
+    cypher_examples="",
 )
 
-summarize_results = SummarizeCypherResult(llm=OpenAIChat(
-    openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613", max_tokens=128))
+summarize_results = SummarizeCypherResult(
+    llm=OpenAIChat(
+        openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613", max_tokens=128
+    )
+)
+
+questionProposalGenerator = QuestionProposalGenerator(
+    database=neo4j_connection,
+    llm=OpenAIChat(
+        openai_api_key=openai_api_key,
+        model_name="gpt-3.5-turbo-0613",
+        max_tokens=512,
+        temperature=0.8,
+    ),
+)
 
 # Define FastAPI endpoint
 app = FastAPI()
@@ -56,6 +73,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/questionProposalsForCurrentDb")
+async def questionProposalsForCurrentDb():
+    return questionProposalGenerator.run()
 
 
 @app.websocket("/text2text")
@@ -127,6 +149,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 await sendDebugMessage("output done")
     except WebSocketDisconnect:
         print("disconnected")
+
 
 if __name__ == "__main__":
     import uvicorn
