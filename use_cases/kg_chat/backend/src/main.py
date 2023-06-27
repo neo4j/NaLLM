@@ -120,7 +120,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         results = text2cypher.run(question, chatHistory)
                         print("results", results)
                     except Exception as e:
-                        await sendErrorMessage(e)
+                        await sendErrorMessage(str(e))
                         continue
                     if results == None:
                         await sendErrorMessage("Could not generate Cypher statement")
@@ -145,7 +145,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         }
                     )
                 except Exception as e:
-                    await sendErrorMessage(e)
+                    await sendErrorMessage(str(e))
                 await sendDebugMessage("output done")
     except WebSocketDisconnect:
         print("disconnected")
