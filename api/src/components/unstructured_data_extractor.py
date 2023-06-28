@@ -1,4 +1,5 @@
 from typing import List
+from joblib import Parallel, delayed
 
 from llm.basellm import BaseLLM
 from utils.unstructured_data_utils import (
@@ -56,10 +57,9 @@ def splitString(string, max_length) -> List[str]:
 def splitStringToFitTokenSpace(
     llm: BaseLLM, string: str, token_use_per_string: int
 ) -> List[str]:
-    allowed_tokens = llm.max_tokens() - token_use_per_string
+    allowed_tokens = llm.max_allowed_token_length() - token_use_per_string
     chunked_data = splitString(string, 500)
     combined_chunks = []
-
     current_chunk = ""
     for chunk in chunked_data:
         if (
@@ -79,18 +79,14 @@ def splitStringToFitTokenSpace(
 def getNodesAndRelationshipsFromResult(result):
     regex = "Nodes:\s+(.*?)\s?\s?Relationships:\s+(.*)"
     internalRegex = "\[(.*?)\]"
-
     nodes = []
     relationships = []
     for row in result:
         parsing = re.match(regex, row, flags=re.S)
-
         if parsing == None:
             continue
-
         rawNodes = str(parsing.group(1))
         rawRelationships = parsing.group(2)
-
         nodes.extend(re.findall(internalRegex, rawNodes))
         relationships.extend(re.findall(internalRegex, rawRelationships))
 
@@ -99,7 +95,6 @@ def getNodesAndRelationshipsFromResult(result):
     result["relationships"] = []
     result["nodes"].extend(nodesTextToListOfDict(nodes))
     result["relationships"].extend(relationshipTextToListOfDict(relationships))
-
     return result
 
 
@@ -108,6 +103,15 @@ class DataExtractor(BaseComponent):
 
     def __init__(self, llm: BaseLLM) -> None:
         self.llm = llm
+
+    def process(self, chunk):
+        messages = [
+            {"role": "system", "content": generate_system_message()},
+            {"role": "user", "content": generate_prompt(chunk)},
+        ]
+        print(messages)
+        output = self.llm.generate(messages)
+        return output
 
     def run(self, data: str) -> List[str]:
         system_message = generate_system_message()
@@ -118,16 +122,13 @@ class DataExtractor(BaseComponent):
         chunked_data = splitStringToFitTokenSpace(
             llm=self.llm, string=data, token_use_per_string=token_usage_per_prompt
         )
-        result = []
-        for chunk in chunked_data:
-            messages = [
-                {"role": "system", "content": generate_system_message()},
-                {"role": "user", "content": generate_prompt(chunk)},
-            ]
-            output = self.llm.generate(messages)
-            result.append(output)
-
-        return getNodesAndRelationshipsFromResult(result)
+        print("starting multiple procceesing")
+        results = Parallel(n_jobs=10)(
+            delayed(self.process)(chunk) for chunk in chunked_data
+        )
+        print("finished multiple procceesing")
+        print(results)
+        return getNodesAndRelationshipsFromResult(results)
 
 
 class DataExtractorWithSchema(BaseComponent):
