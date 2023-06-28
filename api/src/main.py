@@ -13,6 +13,7 @@ from components.question_proposal_generator import (
 )
 from driver.neo4j import Neo4jDatabase
 from llm.openai import OpenAIChat
+from fewshot_examples import fewshot_examples
 from pydantic import BaseModel
 
 
@@ -39,7 +40,7 @@ default_llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turb
 text2cypher = Text2Cypher(
     database=neo4j_connection,
     llm=default_llm,
-    cypher_examples="",
+    cypher_examples=fewshot_examples['companies'],
 )
 
 summarize_results = SummarizeCypherResult(

@@ -9,6 +9,7 @@ The latest prompt contains the information, and you need to generate a human rea
 Make the answer sound as a response to the question. Do not mention that you based the result on the given information.
 Do not add any additional information that is not explicitly provided in the latest prompt.
 I repeat, do not add any information that is not explicitly given.
+Make the answer as concise as possible and do not use more than 50 words.
 """
 
 def remove_large_lists(d: Dict[str, Any]) -> Dict[str, Any]:
