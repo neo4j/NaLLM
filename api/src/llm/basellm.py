@@ -30,7 +30,7 @@ class BaseLLM(ABC):
         """Given a string returns the number of tokens the given string consists of"""
 
     @abstractmethod
-    async def max_tokens(
+    async def max_allowed_token_length(
         self,
     ) -> int:
         """Returns the maximum number of tokens the LLM can handle"""

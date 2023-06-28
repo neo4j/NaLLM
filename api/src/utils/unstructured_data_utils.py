@@ -3,7 +3,7 @@ import re
 
 regex = "Nodes:\s+(.*?)\s?\s?Relationships:\s+(.*)"
 internalRegex = "\[(.*?)\]"
-jsonRegex = "\{(.*?)\}"
+jsonRegex = "\{.*\}"
 
 
 def nodesTextToListOfDict(nodes):
@@ -13,11 +13,10 @@ def nodesTextToListOfDict(nodes):
         name = nodeList[0].strip().replace('"', "")
         label = nodeList[1].strip().replace('"', "")
         properties = re.search(jsonRegex, node)
-        if properties == None or properties.group(1).strip() == "":
+        if properties == None:
             properties = "{}"
         else:
             properties = properties.group(0)
-
         properties = json.loads(properties)
         result.append({"name": name, "label": label, "properties": properties})
     return result
@@ -36,7 +35,7 @@ def relationshipTextToListOfDict(relationships):
         type = relationList[1].strip().replace('"', "")
 
         properties = re.search(jsonRegex, relation)
-        if properties == None or properties.group(0).strip() == "":
+        if properties == None:
             properties = "{}"
         else:
             properties = properties.group(0)

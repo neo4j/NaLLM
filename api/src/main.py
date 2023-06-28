@@ -1,11 +1,15 @@
 import os
+from typing import Optional
 
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from components.data_disambiguation import DataDisambiguation
-from components.unstructured_data_extractor import DataExtractor, DataExtractorWithSchema
+from components.unstructured_data_extractor import (
+    DataExtractor,
+    DataExtractorWithSchema,
+)
 from components.text2cypher import Text2Cypher
 from components.summarize_cypher_result import SummarizeCypherResult
 from components.question_proposal_generator import (
@@ -20,6 +24,11 @@ class Payload(BaseModel):
     question: str
 
 
+class ImportPayload(BaseModel):
+    input: str
+    neo4j_schema: Optional[str]
+
+
 # Maximum number of records used in the context
 HARD_LIMIT_CONTEXT_RECORDS = 10
 
@@ -27,7 +36,7 @@ neo4j_connection = Neo4jDatabase(
     host=os.environ.get("NEO4J_URL", "neo4j+s://demo.neo4jlabs.com"),
     user=os.environ.get("NEO4J_USER", "companies"),
     password=os.environ.get("NEO4J_PASS", "companies"),
-    database=os.environ.get("NEO4J_PASS", "companies")
+    database=os.environ.get("NEO4J_PASS", "companies"),
 )
 
 
@@ -149,8 +158,9 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         print("disconnected")
 
+
 @app.post("/data2cypher")
-async def root(payload: Payload):
+async def root(payload: ImportPayload):
     """
     Takes an input and created a Cypher query
     """
@@ -178,6 +188,7 @@ async def root(payload: Payload):
     except Exception as e:
         print(e)
         return f"Error: {e}"
+
 
 if __name__ == "__main__":
     import uvicorn

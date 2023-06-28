@@ -76,6 +76,6 @@ class OpenAIChat(BaseLLM):
         num_tokens = len(encoding.encode(string))
         return num_tokens
 
-    def max_tokens(self) -> int:
+    def max_allowed_token_length(self) -> int:
         # TODO: list all models and their max tokens from api
         return 2049
