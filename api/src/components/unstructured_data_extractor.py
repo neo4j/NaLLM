@@ -1,12 +1,12 @@
 from typing import List
 
-from use_cases.shared.llm.basellm import BaseLLM
-from use_cases.shared.utils.unstructured_data_utils import (
+from llm.basellm import BaseLLM
+from utils.unstructured_data_utils import (
     nodesTextToListOfDict,
     relationshipTextToListOfDict,
 )
 
-from .base_component import BaseComponent
+from components.base_component import BaseComponent
 import re
 
 

@@ -1,10 +1,10 @@
 from typing import List
 
-from use_cases.shared.utils.unstructured_data_utils import (
+from utils.unstructured_data_utils import (
     nodesTextToListOfDict,
     relationshipTextToListOfDict,
 )
-from .base_component import BaseComponent
+from components.base_component import BaseComponent
 from itertools import groupby
 import json
 import re

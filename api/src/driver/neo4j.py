@@ -2,8 +2,6 @@ from typing import List, Optional, Dict, Any
 
 from neo4j import GraphDatabase, exceptions
 
-from logger import logger
-
 
 node_properties_query = """
 CALL apoc.meta.data()
@@ -82,7 +80,7 @@ class Neo4jDatabase:
         cypher_query: str,
         params: Optional[Dict] = {}
     ) -> List[Dict[str, Any]]:
-        with self._driver.session() as session:
+        with self._driver.session(database=self._database) as session:
             try:
                 if self._read_only:
                     result = session.read_transaction(
