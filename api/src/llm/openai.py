@@ -58,7 +58,7 @@ class OpenAIChat(BaseLLM):
         completions = openai.ChatCompletion.create(
             model=self.model,
             temperature=self.temperature,
-            max_tokens=1000,
+            max_tokens=self.max_tokens,
             messages=messages,
             stream=True,
         )

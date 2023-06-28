@@ -5,14 +5,25 @@ from llm.basellm import BaseLLM
 from components.base_component import BaseComponent
 import re
 
+def remove_relationship_direction(cypher):
+    return cypher.replace(">","").replace("<","")
+    
+
 
 class Text2Cypher(BaseComponent):
     def __init__(
-        self, llm: BaseLLM, database: Neo4jDatabase, use_schema: bool = True, cypher_examples: str = ""
+        self, 
+        llm: BaseLLM, 
+        database: Neo4jDatabase, 
+        use_schema: bool = True, 
+        cypher_examples: str = "",
+        ignore_relationship_direction: bool = True
+
     ) -> None:
         self.llm = llm
         self.database = database
         self.cypher_examples = cypher_examples
+        self.ignore_relationship_direction = ignore_relationship_direction
         if use_schema:
             self.schema = database.schema
 
@@ -68,6 +79,10 @@ class Text2Cypher(BaseComponent):
         if match is None:
             return {"output": [{"message": cypher}], "generated_cypher": None}
         extracted_cypher = match.group(1)
+    
+        if self.ignore_relationship_direction:
+            extracted_cypher = remove_relationship_direction(extracted_cypher)
+        
         print(f"Generated cypher: {extracted_cypher}")
         
         output = self.database.query(extracted_cypher)
