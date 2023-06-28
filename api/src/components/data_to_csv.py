@@ -1,5 +1,5 @@
 from typing import List
-from .base_component import BaseComponent
+from components.base_component import BaseComponent
 
 
 def generate_system_message() -> str:

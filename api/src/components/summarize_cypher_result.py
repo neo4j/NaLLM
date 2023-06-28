@@ -1,7 +1,6 @@
-import asyncio
 from typing import Awaitable, Callable, Dict, Any, List
-from .base_component import BaseComponent
-from use_cases.shared.llm.basellm import BaseLLM
+from components.base_component import BaseComponent
+from llm.basellm import BaseLLM
 
 
 system = f"""

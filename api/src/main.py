@@ -1,22 +1,18 @@
-import sys
 import os
-from pathlib import Path
 
-
-current_file = Path(__file__).resolve()
-project_root = current_file.parents[4]
-sys.path.append(str(project_root))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from use_cases.shared.components.text2cypher import Text2Cypher
-from use_cases.shared.components.summarize_cypher_result import SummarizeCypherResult
-from use_cases.shared.components.question_proposal_generator import (
+from components.data_disambiguation import DataDisambiguation
+from components.unstructured_data_extractor import DataExtractor, DataExtractorWithSchema
+from components.text2cypher import Text2Cypher
+from components.summarize_cypher_result import SummarizeCypherResult
+from components.question_proposal_generator import (
     QuestionProposalGenerator,
 )
-from use_cases.shared.driver.neo4j import Neo4jDatabase
-from use_cases.shared.llm.openai import OpenAIChat
+from driver.neo4j import Neo4jDatabase
+from llm.openai import OpenAIChat
 from pydantic import BaseModel
 
 
@@ -28,18 +24,21 @@ class Payload(BaseModel):
 HARD_LIMIT_CONTEXT_RECORDS = 10
 
 neo4j_connection = Neo4jDatabase(
-    host=os.environ.get("NEO4J_URL", "bolt://neo4j:7687"),
-    user=os.environ.get("NEO4J_USER", "neo4j"),
-    password=os.environ.get("NEO4J_PASS", "pleaseletmein"),
+    host=os.environ.get("NEO4J_URL", "neo4j+s://demo.neo4jlabs.com"),
+    user=os.environ.get("NEO4J_USER", "companies"),
+    password=os.environ.get("NEO4J_PASS", "companies"),
+    database=os.environ.get("NEO4J_PASS", "companies")
 )
 
 
 # Initialize LLM modules
 openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
+default_llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613")
+
 text2cypher = Text2Cypher(
     database=neo4j_connection,
-    llm=OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613"),
+    llm=default_llm,
     cypher_examples="",
 )
 
@@ -150,6 +149,35 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         print("disconnected")
 
+@app.post("/data2cypher")
+async def root(payload: Payload):
+    """
+    Takes an input and created a Cypher query
+    """
+    if not payload:
+        return "missing request body"
+    try:
+        result = ""
+
+        if payload.neo4j_schema == "" or payload.neo4j_schema == None:
+            extractor = DataExtractor(llm=default_llm)
+            result = extractor.run(data=payload.input)
+        else:
+            extractor = DataExtractorWithSchema(llm=default_llm)
+            result = extractor.run(schema=payload.neo4j_schema, data=payload.input)
+
+        print("Extracted result: " + str(result))
+
+        disambiguation = DataDisambiguation(llm=default_llm)
+        disambiguation_result = disambiguation.run(result)
+
+        print("Disambiguation result " + str(disambiguation_result))
+
+        return {"data": disambiguation_result}
+
+    except Exception as e:
+        print(e)
+        return f"Error: {e}"
 
 if __name__ == "__main__":
     import uvicorn

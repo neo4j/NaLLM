@@ -1,7 +1,7 @@
 from typing import Dict, List, Union
 
-from ..driver.neo4j import Neo4jDatabase
-from .base_component import BaseComponent
+from driver.neo4j import Neo4jDatabase
+from components.base_component import BaseComponent
 
 
 def construct_cypher(label, property, k) -> str:

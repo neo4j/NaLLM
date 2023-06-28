@@ -6,7 +6,7 @@ ARG FOLDER=/ui
 
 RUN mkdir -p $FOLDER
 
-COPY .$FOLDER/. /ui/.
+COPY . /ui/.
 
 #CMD ["cd", "ui"]
 

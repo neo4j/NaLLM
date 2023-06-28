@@ -3,7 +3,7 @@ from typing import (
     List,
 )
 
-from .base_embedding import BaseEmbedding
+from embedding.base_embedding import BaseEmbedding
 
 
 class OpenAIEmbedding(BaseEmbedding):

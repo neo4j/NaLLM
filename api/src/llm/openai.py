@@ -8,7 +8,7 @@ from typing import (
 import tiktoken
 
 
-from .basellm import BaseLLM
+from llm.basellm import BaseLLM
 
 
 class OpenAIChat(BaseLLM):
