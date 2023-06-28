@@ -28,6 +28,7 @@
     "@neo4j/graph-schema-utils": "^1.0.0-next.9",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
+    "nanoid": "^4.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-use-websocket": "^4.3.1",
