@@ -123,14 +123,13 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            api_key = openai_api_key
-            if api_key == None and data.api_key == None:
+            if not openai_api_key and not data.get('api_key'):
                 raise HTTPException(
                     status_code=422,
                     detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
                 )
-            else:
-                api_key = data.api_key
+            
+            api_key = openai_api_key if openai_api_key else data.get('api_key')
 
             default_llm = OpenAIChat(
                 openai_api_key=api_key, model_name="gpt-3.5-turbo-0613"

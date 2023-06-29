@@ -6,7 +6,7 @@ from components.base_component import BaseComponent
 import re
 
 def remove_relationship_direction(cypher):
-    return cypher.replace(">","").replace("<","")
+    return cypher.replace("->","-").replace("<-","-")
     
 
 
