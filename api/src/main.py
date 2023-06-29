@@ -71,7 +71,7 @@ app.add_middleware(
 
 @app.get("/questionProposalsForCurrentDb")
 async def questionProposalsForCurrentDb(payload: questionProposalPayload):
-    if api_key == None and payload.api_key == None:
+    if openai_api_key == None and payload.api_key == None:
         raise HTTPException(
             status_code=422,
             detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
@@ -122,13 +122,13 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            if not openai_api_key and not data.get('api_key'):
+            if not openai_api_key and not data.get("api_key"):
                 raise HTTPException(
                     status_code=422,
                     detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
                 )
-            
-            api_key = openai_api_key if openai_api_key else data.get('api_key')
+
+            api_key = openai_api_key if openai_api_key else data.get("api_key")
 
             default_llm = OpenAIChat(
                 openai_api_key=api_key, model_name="gpt-3.5-turbo-0613"
@@ -199,7 +199,7 @@ async def root(payload: ImportPayload):
     if not payload:
         return "missing request body"
 
-    if api_key == None and payload.api_key == None:
+    if openai_api_key == None and payload.api_key == None:
         raise HTTPException(
             status_code=422,
             detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
