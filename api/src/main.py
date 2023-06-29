@@ -2,24 +2,22 @@ import json
 import os
 from typing import Optional
 
-
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-
 from components.data_disambiguation import DataDisambiguation
+from components.question_proposal_generator import (
+    QuestionProposalGenerator,
+)
+from components.summarize_cypher_result import SummarizeCypherResult
+from components.text2cypher import Text2Cypher
 from components.unstructured_data_extractor import (
     DataExtractor,
     DataExtractorWithSchema,
 )
-from components.text2cypher import Text2Cypher
-from components.summarize_cypher_result import SummarizeCypherResult
-from components.question_proposal_generator import (
-    QuestionProposalGenerator,
-)
 from driver.neo4j import Neo4jDatabase
-from llm.openai import OpenAIChat
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fewshot_examples import fewshot_examples
+from llm.openai import OpenAIChat
 from pydantic import BaseModel
 
 

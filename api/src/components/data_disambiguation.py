@@ -1,13 +1,13 @@
+import json
+import re
+from itertools import groupby
 from typing import List
 
+from components.base_component import BaseComponent
 from utils.unstructured_data_utils import (
     nodesTextToListOfDict,
     relationshipTextToListOfDict,
 )
-from components.base_component import BaseComponent
-from itertools import groupby
-import json
-import re
 
 
 def generate_system_message_for_nodes() -> str:
