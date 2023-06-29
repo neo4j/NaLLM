@@ -5,6 +5,7 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from components.data_disambiguation import DataDisambiguation
 from components.unstructured_data_extractor import (
@@ -93,8 +94,8 @@ async def questionProposalsForCurrentDb(payload: questionProposalPayload):
 
 
 @app.get("/hasapikey")
-async def questionProposalsForCurrentDb():
-    return json.dumps({"output": openai_api_key == None})
+async def hasApiKey():
+    return JSONResponse(content={"output": openai_api_key == None})
 
 
 @app.websocket("/text2text")
