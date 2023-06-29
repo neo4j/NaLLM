@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Optional
 
@@ -50,8 +51,6 @@ neo4j_connection = Neo4jDatabase(
 # Initialize LLM modules
 openai_api_key = os.environ.get("OPENAI_API_KEY", None)
 
-print("api_key", openai_api_key)
-
 
 # Define FastAPI endpoint
 app = FastAPI()
@@ -95,10 +94,7 @@ async def questionProposalsForCurrentDb(payload: questionProposalPayload):
 
 @app.get("/hasapikey")
 async def questionProposalsForCurrentDb():
-    if openai_api_key == None:
-        return False
-    else:
-        return True
+    return json.dumps({"output": openai_api_key == None})
 
 
 @app.websocket("/text2text")
