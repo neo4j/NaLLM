@@ -1,7 +1,6 @@
 import json
 import re
 from itertools import groupby
-from typing import List
 
 from components.base_component import BaseComponent
 from utils.unstructured_data_utils import (
