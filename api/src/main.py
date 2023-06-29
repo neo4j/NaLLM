@@ -71,14 +71,12 @@ app.add_middleware(
 
 @app.get("/questionProposalsForCurrentDb")
 async def questionProposalsForCurrentDb(payload: questionProposalPayload):
-    api_key = openai_api_key
     if api_key == None and payload.api_key == None:
         raise HTTPException(
             status_code=422,
             detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
         )
-    else:
-        api_key = payload.api_key
+    api_key = openai_api_key if openai_api_key else payload.get("api_key")
 
     questionProposalGenerator = QuestionProposalGenerator(
         database=neo4j_connection,
@@ -201,14 +199,12 @@ async def root(payload: ImportPayload):
     if not payload:
         return "missing request body"
 
-    api_key = openai_api_key
     if api_key == None and payload.api_key == None:
         raise HTTPException(
             status_code=422,
             detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
         )
-    else:
-        api_key = payload.api_key
+    api_key = openai_api_key if openai_api_key else payload.get("api_key")
 
     try:
         result = ""
