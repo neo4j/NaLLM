@@ -66,9 +66,9 @@ app.add_middleware(
 )
 
 
-@app.get("/questionProposalsForCurrentDb")
+@app.post("/questionProposalsForCurrentDb")
 async def questionProposalsForCurrentDb(payload: questionProposalPayload):
-    if openai_api_key == None and payload.api_key == None:
+    if not openai_api_key and not payload.get("api_key"):
         raise HTTPException(
             status_code=422,
             detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
@@ -78,7 +78,7 @@ async def questionProposalsForCurrentDb(payload: questionProposalPayload):
     questionProposalGenerator = QuestionProposalGenerator(
         database=neo4j_connection,
         llm=OpenAIChat(
-            openai_api_key=openai_api_key,
+            openai_api_key=api_key,
             model_name="gpt-3.5-turbo-0613",
             max_tokens=512,
             temperature=0.8,
@@ -193,10 +193,7 @@ async def root(payload: ImportPayload):
     """
     Takes an input and created a Cypher query
     """
-    if not payload:
-        return "missing request body"
-
-    if openai_api_key == None and payload.api_key == None:
+    if not openai_api_key and not payload.get("api_key"):
         raise HTTPException(
             status_code=422,
             detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
@@ -208,7 +205,7 @@ async def root(payload: ImportPayload):
 
         llm = OpenAIChat(openai_api_key=api_key, model_name="gpt-3.5-turbo-0613")
 
-        if payload.neo4j_schema == "" or payload.neo4j_schema == None:
+        if not payload.neo4j_schema:
             extractor = DataExtractor(llm=llm)
             result = extractor.run(data=payload.input)
         else:
