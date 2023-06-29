@@ -1,14 +1,13 @@
+import re
 from typing import List
-from joblib import Parallel, delayed
 
+from components.base_component import BaseComponent
+from joblib import Parallel, delayed
 from llm.basellm import BaseLLM
 from utils.unstructured_data_utils import (
     nodesTextToListOfDict,
     relationshipTextToListOfDict,
 )
-
-from components.base_component import BaseComponent
-import re
 
 
 def generate_system_message_with_schema() -> str:

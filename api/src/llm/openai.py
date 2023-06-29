@@ -1,14 +1,13 @@
-import openai
-from retry import retry
 from typing import (
     Any,
     Callable,
     List,
 )
+
+import openai
 import tiktoken
-
-
 from llm.basellm import BaseLLM
+from retry import retry
 
 
 class OpenAIChat(BaseLLM):

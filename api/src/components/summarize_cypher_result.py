@@ -1,7 +1,7 @@
-from typing import Awaitable, Callable, Dict, Any, List
+from typing import Any, Awaitable, Callable, Dict, List
+
 from components.base_component import BaseComponent
 from llm.basellm import BaseLLM
-
 
 system = f"""
 You are an assistant that helps to generate text to form nice and human understandable answers based.
@@ -11,6 +11,7 @@ Do not add any additional information that is not explicitly provided in the lat
 I repeat, do not add any information that is not explicitly given.
 Make the answer as concise as possible and do not use more than 50 words.
 """
+
 
 def remove_large_lists(d: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -32,10 +33,10 @@ def remove_large_lists(d: Dict[str, Any]) -> Dict[str, Any]:
             remove_large_lists(d[key])
     return d
 
+
 class SummarizeCypherResult(BaseComponent):
     llm: BaseLLM
     exclude_embeddings: bool
-    
 
     def __init__(self, llm: BaseLLM, exclude_embeddings: bool = True) -> None:
         self.llm = llm
