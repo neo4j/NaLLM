@@ -1,7 +1,3 @@
-from typing import (
-    List,
-)
-
 import openai
 from embedding.base_embedding import BaseEmbedding
 

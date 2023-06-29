@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, List, Union
+from typing import List, Union
 
 
 class BaseComponent(ABC):
