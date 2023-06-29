@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from components.data_disambiguation import DataDisambiguation
@@ -23,11 +23,17 @@ from pydantic import BaseModel
 
 class Payload(BaseModel):
     question: str
+    api_key: Optional[str]
 
 
 class ImportPayload(BaseModel):
     input: str
     neo4j_schema: Optional[str]
+    api_key: Optional[str]
+
+
+class questionProposalPayload(BaseModel):
+    api_key: Optional[str]
 
 
 # Maximum number of records used in the context
@@ -42,31 +48,10 @@ neo4j_connection = Neo4jDatabase(
 
 
 # Initialize LLM modules
-openai_api_key = os.environ.get("OPENAI_API_KEY", "")
+openai_api_key = os.environ.get("OPENAI_API_KEY", None)
 
-default_llm = OpenAIChat(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613")
+print("api_key", openai_api_key)
 
-text2cypher = Text2Cypher(
-    database=neo4j_connection,
-    llm=default_llm,
-    cypher_examples=fewshot_examples['companies'],
-)
-
-summarize_results = SummarizeCypherResult(
-    llm=OpenAIChat(
-        openai_api_key=openai_api_key, model_name="gpt-3.5-turbo-0613", max_tokens=128
-    )
-)
-
-questionProposalGenerator = QuestionProposalGenerator(
-    database=neo4j_connection,
-    llm=OpenAIChat(
-        openai_api_key=openai_api_key,
-        model_name="gpt-3.5-turbo-0613",
-        max_tokens=512,
-        temperature=0.8,
-    ),
-)
 
 # Define FastAPI endpoint
 app = FastAPI()
@@ -85,8 +70,35 @@ app.add_middleware(
 
 
 @app.get("/questionProposalsForCurrentDb")
-async def questionProposalsForCurrentDb():
+async def questionProposalsForCurrentDb(payload: questionProposalPayload):
+    api_key = openai_api_key
+    if api_key == None and payload.api_key == None:
+        raise HTTPException(
+            status_code=422,
+            detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
+        )
+    else:
+        api_key = payload.api_key
+
+    questionProposalGenerator = QuestionProposalGenerator(
+        database=neo4j_connection,
+        llm=OpenAIChat(
+            openai_api_key=openai_api_key,
+            model_name="gpt-3.5-turbo-0613",
+            max_tokens=512,
+            temperature=0.8,
+        ),
+    )
+
     return questionProposalGenerator.run()
+
+
+@app.get("/hasapikey")
+async def questionProposalsForCurrentDb():
+    if openai_api_key == None:
+        return False
+    else:
+        return True
 
 
 @app.websocket("/text2text")
@@ -115,6 +127,31 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
+            api_key = openai_api_key
+            if api_key == None and data.api_key == None:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
+                )
+            else:
+                api_key = data.api_key
+
+            default_llm = OpenAIChat(
+                openai_api_key=api_key, model_name="gpt-3.5-turbo-0613"
+            )
+            summarize_results = SummarizeCypherResult(
+                llm=OpenAIChat(
+                    openai_api_key=api_key,
+                    model_name="gpt-3.5-turbo-0613",
+                    max_tokens=128,
+                )
+            )
+
+            text2cypher = Text2Cypher(
+                database=neo4j_connection,
+                llm=default_llm,
+                cypher_examples=fewshot_examples["companies"],
+            )
 
             if "type" not in data:
                 await websocket.send_json({"error": "missing type"})
@@ -167,19 +204,31 @@ async def root(payload: ImportPayload):
     """
     if not payload:
         return "missing request body"
+
+    api_key = openai_api_key
+    if api_key == None and payload.api_key == None:
+        raise HTTPException(
+            status_code=422,
+            detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
+        )
+    else:
+        api_key = payload.api_key
+
     try:
         result = ""
 
+        llm = OpenAIChat(openai_api_key=api_key, model_name="gpt-3.5-turbo-0613")
+
         if payload.neo4j_schema == "" or payload.neo4j_schema == None:
-            extractor = DataExtractor(llm=default_llm)
+            extractor = DataExtractor(llm=llm)
             result = extractor.run(data=payload.input)
         else:
-            extractor = DataExtractorWithSchema(llm=default_llm)
+            extractor = DataExtractorWithSchema(llm=llm)
             result = extractor.run(schema=payload.neo4j_schema, data=payload.input)
 
         print("Extracted result: " + str(result))
 
-        disambiguation = DataDisambiguation(llm=default_llm)
+        disambiguation = DataDisambiguation(llm=llm)
         disambiguation_result = disambiguation.run(result)
 
         print("Disambiguation result " + str(disambiguation_result))
