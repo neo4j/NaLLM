@@ -15,8 +15,6 @@ services:
   frontend:
     build:
       context: ./ui
-    environment:
-      - VITE_KG_CHAT_BACKEND_ENDPOINT=ws://kg-chat-backend:7860/text2text
     hostname: ui
     restart: always
     container_name: ui

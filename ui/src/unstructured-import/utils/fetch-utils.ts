@@ -5,8 +5,15 @@ type JSONResponse = {
   errors?: Array<{ message: string }>;
 };
 
-export const runImport = async (input: string, schema?: string) => {
+export const runImport = async (input: string, schema?: string, apiKey?: string) => {
   console.log("sending body", JSON.stringify({ input, neo4j_schema: schema }));
+  const body = {
+    input, neo4j_schema: schema ? schema : ""
+  };
+  if (apiKey) {
+    // @ts-ignore
+    body.api_key = apiKey;
+  }
   const response = await fetch(
     `${import.meta.env.VITE_UNSTRUCTURED_IMPORT_BACKEND_ENDPOINT}/data2cypher`,
     {
@@ -14,7 +21,7 @@ export const runImport = async (input: string, schema?: string) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ input, neo4j_schema: schema ? schema : "" }),
+      body: JSON.stringify(body),
     }
   );
   if (!response.ok) {

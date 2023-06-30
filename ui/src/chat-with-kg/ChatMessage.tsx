@@ -2,6 +2,7 @@ export type ChatMessageObject = {
   id: number;
   type: "input" | "text" | "error";
   message: string;
+  cypher?: string | null;
   sender: "bot" | "self";
   complete: boolean;
 };
@@ -12,7 +13,7 @@ export type ChatMessageProps = {
 
 function ChatMessage(props: ChatMessageProps) {
   const { chatMessage } = props;
-  const { type, message, sender } = chatMessage;
+  const { type, message, sender, cypher } = chatMessage;
   const chatClass = `flex flex-row relative max-w-full ${
     sender === "bot" ? "self-start mr-10" : "ml-10 self-end"
   }`;
@@ -26,6 +27,7 @@ function ChatMessage(props: ChatMessageProps) {
         }`}
       >
         {message}
+        {sender === "bot" && cypher && <ChatCypherDetail cypher={cypher} />}
       </div>
       {sender === "self" && <ChatMessageTail side="right" />}
     </div>
@@ -56,6 +58,17 @@ function ChatMessageTail({ side }: { side: "left" | "right" }) {
       className="absolute bottom-0 bg-palette-primary-bg-strong"
       style={chatTailStyle}
     ></div>
+  );
+}
+
+function ChatCypherDetail({ cypher }: { cypher: string }) {
+  return (
+    <details>
+      <summary className="">Cypher</summary>
+      <div className="min-w-0 px-4 py-2 rounded-lg bg-palette-primary-bg-weak text-palette-neutral-text-default">
+        {cypher}
+      </div>
+    </details>
   );
 }
 
