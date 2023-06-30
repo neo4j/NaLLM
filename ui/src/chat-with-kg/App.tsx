@@ -77,60 +77,69 @@ function App() {
   const showContent = serverAvailable && !needsApiKeyLoading;
 
   function loadSampleQuestions() {
-    const body = {};
+    const body = {
+      api_key: apiKey,
+    };
     const options = {
-      method: "POST" ,
+      method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     };
     fetch(QUESTIONS_URI, options).then(
-      response => {
+      (response) => {
         response.json().then(
-          result => {
+          (result) => {
             if (result.output && result.output.length > 0) {
               setSampleQuestions(result.output.map(stripQuestionPrefix));
             } else {
               setSampleQuestions([]);
             }
           },
-          error => {
+          (error) => {
             setSampleQuestions([]);
           }
         );
       },
-      error => {
+      (error) => {
         setSampleQuestions([]);
-    });
-  };
+      }
+    );
+  }
 
   useEffect(() => {
-    fetch(HAS_API_KEY_URI).then(response => {
-      response.json().then(result => {
-        // const needsKey = result.output;
-        const needsKey = !result.output;
-        setNeedsApiKey(needsKey);
-        setNeedsApiKeyLoading(false);
-        if (needsKey) {
-          const api_key = loadKeyFromStorage();
-          if (api_key) {
-            setApiKey(api_key);
-            loadSampleQuestions();
-          } else {
-            setModalIsOpen(true);
+    fetch(HAS_API_KEY_URI).then(
+      (response) => {
+        response.json().then(
+          (result) => {
+            // const needsKey = result.output;
+            const needsKey = !result.output;
+            setNeedsApiKey(needsKey);
+            setNeedsApiKeyLoading(false);
+            if (needsKey) {
+              const api_key = loadKeyFromStorage();
+              if (api_key) {
+                setApiKey(api_key);
+                loadSampleQuestions();
+              } else {
+                setModalIsOpen(true);
+              }
+            } else {
+              loadSampleQuestions();
+            }
+          },
+          (error) => {
+            setNeedsApiKeyLoading(false);
+            setServerAvailable(false);
           }
-        } else {
-          loadSampleQuestions();
-        }
-      }, error => {
+        );
+      },
+      (error) => {
         setNeedsApiKeyLoading(false);
         setServerAvailable(false);
-      });
-    }, error => {
-      setNeedsApiKeyLoading(false);
-      setServerAvailable(false);
-    });
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -181,7 +190,7 @@ function App() {
           {
             ...lastChatMessage,
             complete: true,
-            cypher: websocketResponse.generated_cypher
+            cypher: websocketResponse.generated_cypher,
           },
         ];
       });
@@ -244,13 +253,19 @@ function App() {
   const onApiKeyChange = (newApiKey: string) => {
     setApiKey(newApiKey);
     localStorage.setItem("api_key", newApiKey);
-  }
+  };
 
   return (
     <div className="flex flex-col min-w-[800px] min-h-[100vh] bg-palette-neutral-bg-strong">
-      {needsApiKey && <div className="flex justify-end mr-4"><button onClick={openModal}>API Key</button></div>}
+      {needsApiKey && (
+        <div className="flex justify-end mr-4">
+          <button onClick={openModal}>API Key</button>
+        </div>
+      )}
       <div className="p-6 mx-auto mt-20 rounded-lg bg-palette-neutral-bg-weak min-h-[6rem] min-w-[18rem] max-w-4xl ">
-        {!serverAvailable && <div>Server is unavailable, please reload the page to try again.</div>}
+        {!serverAvailable && (
+          <div>Server is unavailable, please reload the page to try again.</div>
+        )}
         {serverAvailable && needsApiKeyLoading && <div>Initializing...</div>}
         <KeyModal
           isOpen={showContent && needsApiKey && modalIsOpen}
@@ -272,7 +287,9 @@ function App() {
             {errorMessage}
           </>
         )}{" "}
-        {showContent && readyState === ReadyState.CONNECTING && <div>Connecting...</div>}
+        {showContent && readyState === ReadyState.CONNECTING && (
+          <div>Connecting...</div>
+        )}
         {showContent && readyState === ReadyState.CLOSED && (
           <div className="flex flex-col">
             <div>Could not connect to server, reconnecting...</div>
