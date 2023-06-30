@@ -1,6 +1,7 @@
 export type WebSocketRequest = {
   type: "question";
   question: string;
+  api_key?: string;
 };
 
 export type WebSocketResponse =

@@ -3,6 +3,7 @@ import ChatContainer from "./ChatContainer";
 import type { ChatMessageObject } from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import useWebSocket, { ReadyState } from "react-use-websocket";
+import KeyModal from "../components/keymodal";
 import type {
   ConversationState,
   WebSocketRequest,
@@ -36,7 +37,31 @@ const URI =
   import.meta.env.VITE_KG_CHAT_BACKEND_ENDPOINT ??
   "ws://localhost:7860/text2text";
 
+const HAS_API_KEY_URI =
+  import.meta.env.VITE_HAS_API_KEY_ENDPOINT ??
+  "http://localhost:7860/hasapikey";
+
+const QUESTIONS_URI =
+  import.meta.env.VITE_KG_CHAT_SAMPLE_QUESTIONS_ENDPOINT ??
+  "http://localhost:7860/questionProposalsForCurrentDb";
+
+function loadKeyFromStorage() {
+  return localStorage.getItem("api_key");
+}
+
+const QUESTION_PREFIX_REGEXP = /^[0-9]{1,2}[\w]*[\.\)\-]*[\w]*/;
+
+function stripQuestionPrefix(question: string): string {
+  if (question.match(QUESTION_PREFIX_REGEXP)) {
+    return question.replace(QUESTION_PREFIX_REGEXP, "");
+  }
+  return question;
+}
+
 function App() {
+  const [serverAvailable, setServerAvailable] = useState(true);
+  const [needsApiKeyLoading, setNeedsApiKeyLoading] = useState(true);
+  const [needsApiKey, setNeedsApiKey] = useState(true);
   const [chatMessages, setChatMessages] = useState(chatMessageObjects);
   const [conversationState, setConversationState] =
     useState<ConversationState>("ready");
@@ -45,9 +70,80 @@ function App() {
     reconnectInterval: 5000,
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [apiKey, setApiKey] = useState(loadKeyFromStorage() || "");
+  const [sampleQuestions, setSampleQuestions] = useState<string[]>([]);
+
+  const showContent = serverAvailable && !needsApiKeyLoading;
+
+  function loadSampleQuestions() {
+    const body = {
+      api_key: apiKey,
+    };
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    };
+    fetch(QUESTIONS_URI, options).then(
+      (response) => {
+        response.json().then(
+          (result) => {
+            if (result.output && result.output.length > 0) {
+              setSampleQuestions(result.output.map(stripQuestionPrefix));
+            } else {
+              setSampleQuestions([]);
+            }
+          },
+          (error) => {
+            setSampleQuestions([]);
+          }
+        );
+      },
+      (error) => {
+        setSampleQuestions([]);
+      }
+    );
+  }
 
   useEffect(() => {
-    if (!lastMessage) {
+    fetch(HAS_API_KEY_URI).then(
+      (response) => {
+        response.json().then(
+          (result) => {
+            // const needsKey = result.output;
+            const needsKey = !result.output;
+            setNeedsApiKey(needsKey);
+            setNeedsApiKeyLoading(false);
+            if (needsKey) {
+              const api_key = loadKeyFromStorage();
+              if (api_key) {
+                setApiKey(api_key);
+                loadSampleQuestions();
+              } else {
+                setModalIsOpen(true);
+              }
+            } else {
+              loadSampleQuestions();
+            }
+          },
+          (error) => {
+            setNeedsApiKeyLoading(false);
+            setServerAvailable(false);
+          }
+        );
+      },
+      (error) => {
+        setNeedsApiKeyLoading(false);
+        setServerAvailable(false);
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!lastMessage || !serverAvailable) {
       return;
     }
 
@@ -94,6 +190,7 @@ function App() {
           {
             ...lastChatMessage,
             complete: true,
+            cypher: websocketResponse.generated_cypher,
           },
         ];
       });
@@ -115,6 +212,9 @@ function App() {
       type: "question",
       question: question,
     };
+    if (serverAvailable && !needsApiKeyLoading && needsApiKey && apiKey) {
+      webSocketRequest.api_key = apiKey;
+    }
     sendJsonMessage(webSocketRequest);
   };
 
@@ -139,10 +239,41 @@ function App() {
     }
   };
 
+  const openModal = () => {
+    setModalIsOpen(true);
+  };
+
+  const onCloseModal = () => {
+    setModalIsOpen(false);
+    if (apiKey && sampleQuestions.length === 0) {
+      loadSampleQuestions();
+    }
+  };
+
+  const onApiKeyChange = (newApiKey: string) => {
+    setApiKey(newApiKey);
+    localStorage.setItem("api_key", newApiKey);
+  };
+
   return (
     <div className="flex flex-col min-w-[800px] min-h-[100vh] bg-palette-neutral-bg-strong">
+      {needsApiKey && (
+        <div className="flex justify-end mr-4">
+          <button onClick={openModal}>API Key</button>
+        </div>
+      )}
       <div className="p-6 mx-auto mt-20 rounded-lg bg-palette-neutral-bg-weak min-h-[6rem] min-w-[18rem] max-w-4xl ">
-        {readyState === ReadyState.OPEN && (
+        {!serverAvailable && (
+          <div>Server is unavailable, please reload the page to try again.</div>
+        )}
+        {serverAvailable && needsApiKeyLoading && <div>Initializing...</div>}
+        <KeyModal
+          isOpen={showContent && needsApiKey && modalIsOpen}
+          onCloseModal={onCloseModal}
+          onApiKeyChanged={onApiKeyChange}
+          apiKey={apiKey}
+        />
+        {showContent && readyState === ReadyState.OPEN && (
           <>
             <ChatContainer
               chatMessages={chatMessages}
@@ -151,12 +282,15 @@ function App() {
             <ChatInput
               onChatInput={onChatInput}
               loading={conversationState === "waiting"}
+              sampleQuestions={sampleQuestions}
             />
             {errorMessage}
           </>
         )}{" "}
-        {readyState === ReadyState.CONNECTING && <div>Connecting...</div>}
-        {readyState === ReadyState.CLOSED && (
+        {showContent && readyState === ReadyState.CONNECTING && (
+          <div>Connecting...</div>
+        )}
+        {showContent && readyState === ReadyState.CLOSED && (
           <div className="flex flex-col">
             <div>Could not connect to server, reconnecting...</div>
           </div>
