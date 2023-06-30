@@ -3,6 +3,7 @@ from typing import Dict, List, Union, Any
 from driver.neo4j import Neo4jDatabase
 from llm.basellm import BaseLLM
 from components.base_component import BaseComponent
+import re
 
 
 class QuestionProposalGenerator(BaseComponent):
@@ -16,8 +17,8 @@ class QuestionProposalGenerator(BaseComponent):
 
     def get_system_message(self) -> str:
         system = f"""
-        Your task is to come up with questions someone might as about the content of a Neo4j database. Try to make the questions as different as possible. 
-        The questions should be formatted as a list of questions separated by a new line. 
+        Your task is to come up with questions someone might as about the content of a Neo4j database. Try to make the questions as different as possible.
+        The questions should be separated by a new line and each line should only contain one question.
         To do this, you need to understand the schema of the database. Therefore it's very important that you read the schema carefully. You can find the schema below.
         Schema: 
         {self.database.schema}
@@ -45,8 +46,11 @@ class QuestionProposalGenerator(BaseComponent):
         )
         print(messages)
         questionsString = self.llm.generate(messages)
-        questions = questionsString.split("\n")
-
+        questions = [
+            # remove number and dot from the beginning of the question
+            re.sub(r"\A\d\.?\s*", "", question)
+            for question in questionsString.split("\n")
+        ]
         return {
             "output": questions,
         }

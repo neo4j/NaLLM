@@ -69,7 +69,7 @@ app.add_middleware(
 )
 
 
-@app.get("/questionProposalsForCurrentDb")
+@app.post("/questionProposalsForCurrentDb")
 async def questionProposalsForCurrentDb(payload: questionProposalPayload):
     if openai_api_key == None and payload.api_key == None:
         raise HTTPException(
