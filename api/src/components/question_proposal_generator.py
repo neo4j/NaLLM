@@ -1,5 +1,6 @@
-from typing import Dict, List, Union, Any
+from typing import Any, Dict, List, Union
 
+from components.base_component import BaseComponent
 from driver.neo4j import Neo4jDatabase
 from llm.basellm import BaseLLM
 from components.base_component import BaseComponent

@@ -1,7 +1,7 @@
 from typing import Dict, List, Union
 
-from driver.neo4j import Neo4jDatabase
 from components.base_component import BaseComponent
+from driver.neo4j import Neo4jDatabase
 
 
 def construct_cypher(label, property, k) -> str:
@@ -16,14 +16,22 @@ def construct_cypher(label, property, k) -> str:
 
 
 class VectorSearch(BaseComponent):
-    def __init__(self, database: Neo4jDatabase, label: str, property: str, k: int) -> None:
+    def __init__(
+        self, database: Neo4jDatabase, label: str, property: str, k: int
+    ) -> None:
         self.database = database
         self.generated_cypher = construct_cypher(label, property, k)
 
-    def run(self, input:str) -> Dict[str,Union[str, List[Dict[str, str]]]]:
+    def run(self, input: str) -> Dict[str, Union[str, List[Dict[str, str]]]]:
         try:
-            return {"output": [str(el["output"]) for el in self.database.query(self.generated_cypher,
-                                                                               {'input_vector': input})],
-                    "generated_cypher": self.generated_cypher}
+            return {
+                "output": [
+                    str(el["output"])
+                    for el in self.database.query(
+                        self.generated_cypher, {"input_vector": input}
+                    )
+                ],
+                "generated_cypher": self.generated_cypher,
+            }
         except Exception as e:
             return e

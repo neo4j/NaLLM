@@ -1,7 +1,6 @@
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from neo4j import GraphDatabase, exceptions
-
 
 node_properties_query = """
 CALL apoc.meta.data()
@@ -41,11 +40,14 @@ def schema_text(node_props, rel_props, rels) -> str:
 
 
 class Neo4jDatabase:
-    def __init__(self, host: str = "neo4j://localhost:7687",
-                 user: str = "neo4j",
-                 password: str = "pleaseletmein",
-                 database: str = "neo4j",
-                 read_only: bool = True) -> None:
+    def __init__(
+        self,
+        host: str = "neo4j://localhost:7687",
+        user: str = "neo4j",
+        password: str = "pleaseletmein",
+        database: str = "neo4j",
+        read_only: bool = True,
+    ) -> None:
         """Initialize a neo4j database"""
         self._driver = GraphDatabase.driver(host, auth=(user, password))
         self._database = database
@@ -67,8 +69,7 @@ class Neo4jDatabase:
         try:
             self.refresh_schema()
         except:
-            raise ValueError(
-                "Missing APOC Core plugin")
+            raise ValueError("Missing APOC Core plugin")
 
     @staticmethod
     def _execute_read_only_query(tx, cypher_query: str, params: Optional[Dict] = {}):
@@ -76,15 +77,14 @@ class Neo4jDatabase:
         return [r.data() for r in result]
 
     def query(
-        self,
-        cypher_query: str,
-        params: Optional[Dict] = {}
+        self, cypher_query: str, params: Optional[Dict] = {}
     ) -> List[Dict[str, Any]]:
         with self._driver.session(database=self._database) as session:
             try:
                 if self._read_only:
                     result = session.read_transaction(
-                        self._execute_read_only_query, cypher_query, params)
+                        self._execute_read_only_query, cypher_query, params
+                    )
                     return result
                 else:
                     result = session.run(cypher_query, params)
@@ -93,29 +93,39 @@ class Neo4jDatabase:
 
             # Catch Cypher syntax errors
             except exceptions.CypherSyntaxError as e:
-                return [{"code": "invalid_cypher", "message": f"Invalid Cypher statement due to an error: {e}"}]
+                return [
+                    {
+                        "code": "invalid_cypher",
+                        "message": f"Invalid Cypher statement due to an error: {e}",
+                    }
+                ]
 
             except exceptions.ClientError as e:
                 # Catch access mode errors
                 if e.code == "Neo.ClientError.Statement.AccessMode":
-                    return [{"code": "error", "message": "Couldn't execute the query due to the read only access to Neo4j"}]
+                    return [
+                        {
+                            "code": "error",
+                            "message": "Couldn't execute the query due to the read only access to Neo4j",
+                        }
+                    ]
                 else:
                     return [{"code": "error", "message": e}]
 
     def refresh_schema(self) -> None:
-        node_props = [el["output"]
-                      for el in self.query(node_properties_query)]
-        rel_props = [el["output"]
-                     for el in self.query(rel_properties_query)]
+        node_props = [el["output"] for el in self.query(node_properties_query)]
+        rel_props = [el["output"] for el in self.query(rel_properties_query)]
         rels = [el["output"] for el in self.query(rel_query)]
         schema = schema_text(node_props, rel_props, rels)
         self.schema = schema
         print(schema)
 
     def check_if_empty(self) -> bool:
-        data = self.query("""
+        data = self.query(
+            """
         MATCH (n)
         WITH count(n) as c
         RETURN CASE WHEN c > 0 THEN true ELSE false END AS output
-        """)
+        """
+        )
         return data[0]["output"]
