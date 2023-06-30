@@ -68,7 +68,6 @@ app.add_middleware(
 
 @app.post("/questionProposalsForCurrentDb")
 async def questionProposalsForCurrentDb(payload: questionProposalPayload):
-    print(type(payload))
     if not openai_api_key and not payload.api_key:
         raise HTTPException(
             status_code=422,
