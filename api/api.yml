@@ -1,0 +1,4 @@
+runtime: python311
+service: api
+
+entrypoint: cd src && uvicorn --port $PORT main:app
