@@ -90,7 +90,7 @@ async def questionProposalsForCurrentDb(payload: questionProposalPayload):
 
 @app.get("/hasapikey")
 async def hasApiKey():
-    return JSONResponse(content={"output": openai_api_key == None})
+    return JSONResponse(content={"output": openai_api_key is not None})
 
 
 @app.websocket("/text2text")
