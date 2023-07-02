@@ -226,7 +226,12 @@ async def root(payload: ImportPayload):
         return f"Error: {e}"
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+    uvicorn.run(app, port=int(os.environ.get("PORT", 7860)), host="0.0.0.0")

@@ -4,10 +4,12 @@
   "description": "UI template for the NaLLM project",
   "scripts": {
     "dev": "vite",
+    "start": "serve dist",
     "build": "tsc && vite build",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/neo4j/NaLLM.git"
@@ -34,6 +36,7 @@
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
     "react-use-websocket": "^4.3.1",
+    "serve": "^14.2.0",
     "typescript": "^5.0.4"
   },
   "devDependencies": {
@@ -52,5 +55,8 @@
     "postcss": "^8.4.23",
     "tailwindcss": "^3.3.2",
     "vite": "^4.3.8"
+  },
+  "engines": {
+    "node": "^18.0.0"
   }
 }

@@ -1,0 +1,19 @@
+runtime: python
+service: api
+env: flex
+
+entrypoint: cd src && gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+
+runtime_config:
+  operating_system: "ubuntu22"
+  python_version: "3.11"
+
+network:
+  session_affinity: true
+
+liveness_check:
+  path: "/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2

@@ -1,4 +1,4 @@
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -12,9 +12,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        app: fileURLToPath(new URL('./index.html', import.meta.url)),
-        appKgChat: fileURLToPath(new URL('./use-cases/chat-with-kg/index.html', import.meta.url)),
-        appImport: fileURLToPath(new URL('./use-cases/unstructured-import/index.html', import.meta.url)),
+        app: resolve(__dirname, 'index.html'),
+        appKgChat: resolve(__dirname, 'use-cases/chat-with-kg/index.html'),
+        appImport: resolve(__dirname, 'use-cases/unstructured-import/index.html'),
       },
     },
   },
