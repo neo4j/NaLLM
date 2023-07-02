@@ -8,3 +8,4 @@ tiktoken==0.4.0
 python-dotenv==1.0.0
 websockets===11.0.3
 joblib===1.2.0
+gunicorn===20.1.0

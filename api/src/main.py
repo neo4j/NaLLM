@@ -226,6 +226,11 @@ async def root(payload: ImportPayload):
         return f"Error: {e}"
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
 
