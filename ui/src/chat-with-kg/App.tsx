@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, ChangeEvent } from "react";
 import ChatContainer from "./ChatContainer";
 import type { ChatMessageObject } from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -73,6 +73,7 @@ function App() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [apiKey, setApiKey] = useState(loadKeyFromStorage() || "");
   const [sampleQuestions, setSampleQuestions] = useState<string[]>([]);
+  const [text2cypherModel, setText2cypherModel] = useState<string>("gpt-3.5-turbo-0613");
 
   const showContent = serverAvailable && !needsApiKeyLoading;
 
@@ -215,6 +216,7 @@ function App() {
     if (serverAvailable && !needsApiKeyLoading && needsApiKey && apiKey) {
       webSocketRequest.api_key = apiKey;
     }
+    webSocketRequest.model_name = text2cypherModel;
     sendJsonMessage(webSocketRequest);
   };
 
@@ -255,6 +257,10 @@ function App() {
     localStorage.setItem("api_key", newApiKey);
   };
 
+  const handleModelChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setText2cypherModel(e.target.value)
+  }
+
   return (
     <div className="flex flex-col min-w-[800px] min-h-[100vh] bg-palette-neutral-bg-strong">
       {needsApiKey && (
@@ -262,6 +268,13 @@ function App() {
           <button onClick={openModal}>API Key</button>
         </div>
       )}
+        <div className="flex justify-end mr-4">
+        <select value={text2cypherModel} onChange={handleModelChange}>
+            <option value="">Select a text2cypher model</option>
+            <option value="gpt-3.5-turbo-0613">gpt-3.5-turbo</option>
+            <option value="gpt-4">gpt-4</option>
+        </select>
+        </div>
       <div className="p-6 mx-auto mt-20 rounded-lg bg-palette-neutral-bg-weak min-h-[6rem] min-w-[18rem] max-w-4xl ">
         {!serverAvailable && (
           <div>Server is unavailable, please reload the page to try again.</div>
