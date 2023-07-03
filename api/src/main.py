@@ -15,7 +15,7 @@ from driver.neo4j import Neo4jDatabase
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fewshot_examples import fewshot_examples
+from fewshot_examples import get_fewshot_examples
 from llm.openai import OpenAIChat
 from pydantic import BaseModel
 
@@ -141,7 +141,7 @@ async def websocket_endpoint(websocket: WebSocket):
             text2cypher = Text2Cypher(
                 database=neo4j_connection,
                 llm=default_llm,
-                cypher_examples=fewshot_examples["companies"],
+                cypher_examples=get_fewshot_examples(api_key),
             )
 
             if "type" not in data:
