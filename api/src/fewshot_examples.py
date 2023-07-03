@@ -1,12 +1,5 @@
-import os
-
-openai_api_key = os.environ.get("OPENAI_API_KEY", "")
-
-fewshot_examples = {}
-
-fewshot_examples[
-    "companies"
-] = f"""
+def get_fewshot_examples(openai_api_key):
+    return f"""
 #How is Emil Eifrem connected to Michael Hunger?
 MATCH (p1:Person {{name:"Emil Eifrem"}}), (p2:Person {{name:"Michael Hunger"}})
 MATCH p=shortestPath((p1)-[*]-(p2))
