@@ -31,8 +31,10 @@ To simplify the process of running the demos, we have incorporated scripts that 
 3. run `docker-compose up` to build the images.
 
 This will start the backend and frontend servers, and you can access the demos at the following URLs:
-frontend: http://localhost:4173/
-backend: localhost:7860
+
+- user interface: http://localhost:4173/
+
+- backend: localhost:7860
 
 Please note that you'll need Docker installed on your machine to build and run these images. If you haven't already, you can download Docker from [here](https://www.docker.com/products/docker-desktop).
 
@@ -46,6 +48,11 @@ username: companies
 password: companies
 database: companies
 ```
+
+![Graph schema](graph_schema.png)
+
+The database contains both structured information about organizations and people as well as news articles.
+The news articles are linked to the mentioned entity, while the actual text is stored in the  `Chunk` nodes alongside their _text-embedding-ada-002_ vector representations.
 
 ## Contributing
 
