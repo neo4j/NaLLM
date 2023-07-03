@@ -231,6 +231,11 @@ async def health():
     return {"status": "ok"}
 
 
+@app.get("/ready")
+async def readiness_check():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
 

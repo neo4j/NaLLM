@@ -1,4 +1,5 @@
 import re
+import os
 from typing import List
 
 from components.base_component import BaseComponent
@@ -122,9 +123,19 @@ class DataExtractor(BaseComponent):
             llm=self.llm, string=data, token_use_per_string=token_usage_per_prompt
         )
         print("starting multiple procceesing")
-        results = Parallel(n_jobs=10)(
-            delayed(self.process)(chunk) for chunk in chunked_data
-        )
+        results = []
+        multi_processing = False
+
+        if os.environ.get("RUN_PARALLEL", "False") == "True":
+            multi_processing = True
+
+        if multi_processing:
+            results = Parallel(n_jobs=10)(
+                delayed(self.process)(chunk) for chunk in chunked_data
+            )
+        else:
+            for chunk in chunked_data:
+                results.append(self.process(chunk))
         print("finished multiple procceesing")
         print(results)
         return getNodesAndRelationshipsFromResult(results)
