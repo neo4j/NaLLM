@@ -270,7 +270,6 @@ function App() {
       )}
         <div className="flex justify-end mr-4">
         <select value={text2cypherModel} onChange={handleModelChange}>
-            <option value="">Select a text2cypher model</option>
             <option value="gpt-3.5-turbo-0613">gpt-3.5-turbo</option>
             <option value="gpt-4">gpt-4</option>
         </select>
