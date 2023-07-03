@@ -28,22 +28,15 @@ jobs:
           create_credentials_file: true
           workload_identity_provider: "projects/861986238120/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions"
           service_account: "gha-app-engine-publisher@nallm-experiments.iam.gserviceaccount.com"
-      - id: "ls-test"
-        run: ls
-      - id: "ls-test2"
-        run: cd api && ls
-      - id: "pwd-test"
-        run: pwd
-
       - id: "deploy-api"
         name: Deploy API to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
         with:
-          working_directory: api"
+          working_directory: "/home/runner/work/NaLLM/NaLLM/api"
           deliverables: api.yaml
       - id: "deploy-ui"
         name: Deploy UI to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
         with:
-          working_directory: "ui"
+          working_directory: "/home/runner/work/NaLLM/NaLLM/ui"
           deliverables: app.yaml
