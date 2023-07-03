@@ -42,7 +42,7 @@ neo4j_connection = Neo4jDatabase(
     host=os.environ.get("NEO4J_URL", "neo4j+s://demo.neo4jlabs.com"),
     user=os.environ.get("NEO4J_USER", "companies"),
     password=os.environ.get("NEO4J_PASS", "companies"),
-    database=os.environ.get("NEO4J_PASS", "companies"),
+    database=os.environ.get("NEO4J_DATABASE", "companies"),
 )
 
 
