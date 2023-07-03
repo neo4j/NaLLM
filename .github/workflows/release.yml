@@ -33,9 +33,9 @@ jobs:
         name: Deploy API to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
         with:
-          deliverables: api/api.yaml
+          deliverables: ./api/api.yaml
       - id: "deploy-ui"
         name: Deploy UI to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
         with:
-          deliverables: ui/app.yaml
+          deliverables: ./ui/app.yaml
