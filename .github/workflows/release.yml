@@ -32,16 +32,18 @@ jobs:
         run: ls
       - id: "ls-test2"
         run: cd api && ls
+      - id: "pwd-test"
+        run: pwd
 
       - id: "deploy-api"
         name: Deploy API to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
         with:
-          working_directory: ./api"
-          deliverables: ./api.yaml
+          working_directory: api"
+          deliverables: api.yaml
       - id: "deploy-ui"
         name: Deploy UI to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
         with:
-          working_directory: "./ui"
-          deliverables: ./app.yaml
+          working_directory: "ui"
+          deliverables: app.yaml
