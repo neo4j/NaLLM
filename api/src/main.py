@@ -23,6 +23,7 @@ from pydantic import BaseModel
 class Payload(BaseModel):
     question: str
     api_key: Optional[str]
+    model_name: Optional[str]
 
 
 class ImportPayload(BaseModel):
@@ -124,11 +125,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     status_code=422,
                     detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
                 )
-
             api_key = openai_api_key if openai_api_key else data.get("api_key")
 
             default_llm = OpenAIChat(
-                openai_api_key=api_key, model_name="gpt-3.5-turbo-0613"
+                openai_api_key=api_key, model_name=data.get('model_name', 'gpt-3.5-turbo-0613')
             )
             summarize_results = SummarizeCypherResult(
                 llm=OpenAIChat(
