@@ -30,6 +30,12 @@ root.render(
         >
           Unstructured Import
         </a>
+        <a
+          href="use-cases/report-generation/index.html"
+          className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong"
+        >
+          Report generator
+        </a>
       </div>
     </div>
   </React.StrictMode>

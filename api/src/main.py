@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+from components.company_report import CompanyReport
 
 from components.data_disambiguation import DataDisambiguation
 from components.question_proposal_generator import (
@@ -128,7 +129,8 @@ async def websocket_endpoint(websocket: WebSocket):
             api_key = openai_api_key if openai_api_key else data.get("api_key")
 
             default_llm = OpenAIChat(
-                openai_api_key=api_key, model_name=data.get('model_name', 'gpt-3.5-turbo-0613')
+                openai_api_key=api_key,
+                model_name=data.get("model_name", "gpt-3.5-turbo-0613"),
             )
             summarize_results = SummarizeCypherResult(
                 llm=OpenAIChat(
@@ -224,6 +226,42 @@ async def root(payload: ImportPayload):
     except Exception as e:
         print(e)
         return f"Error: {e}"
+
+
+class companyReportPayload(BaseModel):
+    company: str
+
+
+# This endpoint is database specific and only works with the Demo database.
+@app.post("/companyReport")
+async def companyInformation(payload: companyReportPayload):
+    api_key = openai_api_key if openai_api_key else payload.api_key
+    if not openai_api_key and not payload.api_key:
+        raise HTTPException(
+            status_code=422,
+            detail="Please set OPENAI_API_KEY environment variable or send it as api_key in the request body",
+        )
+    api_key = openai_api_key if openai_api_key else payload.api_key
+
+    llm = OpenAIChat(
+        openai_api_key=api_key,
+        model_name="gpt-3.5-turbo-16k-0613",
+        max_tokens=512,
+    )
+
+    company_report = CompanyReport(neo4j_connection, payload.company, llm)
+    result = company_report.run()
+
+    return JSONResponse(content={"output": result})
+
+
+@app.post("/companyReport/list")
+async def companyReportList():
+    company_data = neo4j_connection.query(
+        "MATCH (n:Organization) WITH n WHERE rand() < 0.01 return n.name LIMIT 5",
+    )
+
+    return JSONResponse(content={"output": [x["n.name"] for x in company_data]})
 
 
 @app.get("/health")
