@@ -3,10 +3,20 @@ import { NodeType, RelationshipType } from "../types/respons-types";
 function createNodeStatement(node: NodeType) {
   const properties = Object.entries(node.properties);
   const propertiesStrings: string[] = [];
-  propertiesStrings.push(`import_name: '${node.name}'`);
+  propertiesStrings.push(
+    `import_name: '${node.name.toString().replaceAll("'", "\\'")}'`
+  );
 
   properties.forEach((property) => {
-    propertiesStrings.push(`${property[0]}: '${property[1]}'`);
+    const propertyKey = property[0];
+    const propertyValue = property[1];
+    if (propertyKey === undefined || propertyValue === undefined) {
+      return;
+    }
+    console.log(propertyKey, propertyValue);
+    propertiesStrings.push(
+      `\`${propertyKey}\`: '${propertyValue.toString().replaceAll("'", "\\'")}'`
+    );
   });
   return `CREATE (:\`${node.label}\` {${propertiesStrings.join(", ")}  })`;
 }
@@ -16,14 +26,24 @@ function createRelationshipStatement(relationship: RelationshipType) {
   const properties = Object.entries(relationship.properties);
   const propertiesStrings: string[] = [];
   properties.forEach((property) => {
-    propertiesStrings.push(`${property[0]}: '${property[1]}'`);
+    const propertyKey = property[0];
+    const propertyValue = property[1];
+    if (propertyKey === undefined || propertyValue === undefined) {
+      return;
+    }
+
+    propertiesStrings.push(
+      `\`${propertyKey}\`: '${propertyValue.toString().replaceAll("'", "\\'")}'`
+    );
   });
   //TODO: Make into single statement
-  return `MATCH (source { import_name: '${
-    relationship.start
-  }' }), (target { import_name: '${relationship.end}' }) CREATE (source)-[:\`${
-    relationship.type
-  }\` {${propertiesStrings.join(", ")}}]->(target);`;
+  return `MATCH (source { import_name: '${relationship.start
+    .toString()
+    .replaceAll("'", "\\'")}' }), (target { import_name: '${relationship.end
+    .toString()
+    .replaceAll("'", "\\'")}' }) CREATE (source)-[:\`${relationship.type
+    .toString()
+    .replaceAll("'", "\\'")}\` {${propertiesStrings.join(", ")}}]->(target);`;
 }
 
 export const dataToCypher = (data: {

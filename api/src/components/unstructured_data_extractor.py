@@ -77,16 +77,19 @@ def splitStringToFitTokenSpace(
 
 
 def getNodesAndRelationshipsFromResult(result):
-    regex = "Nodes:\s+(.*?)\s?\s?Relationships:\s+(.*)"
+    regex = "Nodes:\s+(.*?)\s?\s?Relationships:\s?\s?(.*)"
     internalRegex = "\[(.*?)\]"
     nodes = []
     relationships = []
     for row in result:
         parsing = re.match(regex, row, flags=re.S)
+        print("parsing", parsing)
         if parsing == None:
             continue
         rawNodes = str(parsing.group(1))
+        print("rawNodes", rawNodes)
         rawRelationships = parsing.group(2)
+        print("rawRelationships", rawRelationships)
         nodes.extend(re.findall(internalRegex, rawNodes))
         relationships.extend(re.findall(internalRegex, rawRelationships))
 
