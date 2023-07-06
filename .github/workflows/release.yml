@@ -27,7 +27,7 @@ jobs:
         with:
           create_credentials_file: true
           workload_identity_provider: "projects/861986238120/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions"
-          service_account: "nallm-experiments@appspot.gserviceaccount.com"
+          service_account: "gha-app-engine-publisher@nallm-experiments.iam.gserviceaccount.com"
       - id: "deploy-api"
         name: Deploy API to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
