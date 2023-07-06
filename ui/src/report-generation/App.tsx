@@ -99,7 +99,7 @@ function App() {
 
   if (serverAvailable) {
     return (
-      <div className="min-h-screen bg-blueberry-20">
+      <div className="min-h-screen n-bg-palette-neutral-bg-default">
         {needsApiKey && (
           <div className="flex justify-end mr-4">
             <button onClick={openModal}>API Key</button>

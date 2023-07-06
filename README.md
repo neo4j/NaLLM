@@ -1,6 +1,6 @@
 # Project NaLLM
 
-Welcome to the NaLLM project repository, where we are exploring and demonstrating the synergies between Neo4j and Large Language Models (LLMs). As a part of our ongoing project, we are focusing on two primary use cases - a **Natural Language Interface to a Knowledge Graph** and **Creating a Knowledge Graph from Unstructured Data**.
+Welcome to the NaLLM project repository, where we are exploring and demonstrating the synergies between Neo4j and Large Language Models (LLMs). As a part of our ongoing project, we are focusing on three primary use cases - a **Natural Language Interface to a Knowledge Graph**, **Creating a Knowledge Graph from Unstructured Data** and **Generate a Report using both static data and data from LLM**.
 
 View Demos [here](https://nallm-experiments.ew.r.appspot.com/)
 
@@ -52,7 +52,7 @@ database: companies
 ![Graph schema](graph_schema.png)
 
 The database contains both structured information about organizations and people as well as news articles.
-The news articles are linked to the mentioned entity, while the actual text is stored in the  `Chunk` nodes alongside their _text-embedding-ada-002_ vector representations.
+The news articles are linked to the mentioned entity, while the actual text is stored in the `Chunk` nodes alongside their _text-embedding-ada-002_ vector representations.
 
 ## Contributing
 

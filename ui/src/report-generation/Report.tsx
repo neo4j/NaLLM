@@ -52,7 +52,7 @@ export const Report = ({ data }: ReportProps) => {
     return s.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
   return (
-    <div className="w-[280mm]  bg-palette-neutral-bg-default flex flex-col gap-2 p-8 rounded-2xl shadow-lg">
+    <div className="w-[280mm] bg-palette-neutral-bg-weak flex flex-col gap-2 p-8 rounded-2xl shadow-lg">
       <div className="">
         <h3 className="font-bold n-h2">{data.company.name}</h3>
         <p className="font-medium">{data.company.summary}</p>
