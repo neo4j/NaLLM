@@ -21,6 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - run: |
+          ls /home/runner/work/NaLLM/
+      - run: |
+          ls /home/runner/work/NaLLM/NaLLM/
+      - run: |
+          ls /home/runner/work/NaLLM/NaLLM/ui
+      - run: |
+          ls /home/runner/work/NaLLM/NaLLM/api
+
       - id: "auth"
         name: "Authenticate to Google Cloud"
         uses: "google-github-actions/auth@v1"
