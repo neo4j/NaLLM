@@ -17,7 +17,11 @@ def nodesTextToListOfDict(nodes):
             properties = "{}"
         else:
             properties = properties.group(0)
-        properties = json.loads(properties)
+        properties = properties.replace("True", "true")
+        try:
+            properties = json.loads(properties)
+        except:
+            properties = {}
         result.append({"name": name, "label": label, "properties": properties})
     return result
 
@@ -39,8 +43,11 @@ def relationshipTextToListOfDict(relationships):
             properties = "{}"
         else:
             properties = properties.group(0)
-        properties = json.loads(properties)
-
+        properties = properties.replace("True", "true")
+        try:
+            properties = json.loads(properties)
+        except:
+            properties = {}
         result.append(
             {"start": start, "end": end, "type": type, "properties": properties}
         )

@@ -32,28 +32,34 @@ function App() {
   const initDone = serverAvailable && !needsApiKeyLoading;
 
   useEffect(() => {
-    fetch(HAS_API_KEY_URI).then(response => {
-      response.json().then(result => {
-        // const needsKey = result.output;
-        const needsKey = !result.output;
-        setNeedsApiKey(needsKey);
-        setNeedsApiKeyLoading(false);
-        if (needsKey) {
-          const api_key = loadKeyFromStorage();
-          if (api_key) {
-            setApiKey(api_key);
-          } else {
-            setModalIsOpen(true);
+    fetch(HAS_API_KEY_URI).then(
+      (response) => {
+        response.json().then(
+          (result) => {
+            // const needsKey = result.output;
+            const needsKey = !result.output;
+            setNeedsApiKey(needsKey);
+            setNeedsApiKeyLoading(false);
+            if (needsKey) {
+              const api_key = loadKeyFromStorage();
+              if (api_key) {
+                setApiKey(api_key);
+              } else {
+                setModalIsOpen(true);
+              }
+            }
+          },
+          (error) => {
+            setNeedsApiKeyLoading(false);
+            setServerAvailable(false);
           }
-        }
-      }, error => {
+        );
+      },
+      (error) => {
         setNeedsApiKeyLoading(false);
         setServerAvailable(false);
-      });
-    }, error => {
-      setNeedsApiKeyLoading(false);
-      setServerAvailable(false);
-    });
+      }
+    );
   }, []);
 
   const openModal = () => {
@@ -67,7 +73,7 @@ function App() {
   const onApiKeyChange = (newApiKey: string) => {
     setApiKey(newApiKey);
     localStorage.setItem("api_key", newApiKey);
-  }
+  };
 
   const handleImport = async () => {
     if (!serverAvailable || needsApiKeyLoading) {
@@ -108,7 +114,11 @@ function App() {
   if (serverAvailable) {
     return (
       <div className="min-h-screen n-bg-palette-neutral-bg-default">
-        {needsApiKey && <div className="flex justify-end mr-4"><button onClick={openModal}>API Key</button></div>}
+        {needsApiKey && (
+          <div className="flex justify-end mr-4">
+            <button onClick={openModal}>API Key</button>
+          </div>
+        )}
         <KeyModal
           isOpen={initDone && needsApiKey && modalIsOpen}
           onCloseModal={onCloseModal}
@@ -116,19 +126,36 @@ function App() {
           apiKey={apiKey}
         />
         <main className="flex flex-col gap-10 p-2">
-          <div className="flex flex-col w-2/3 min-h-0 gap-2 mx-auto mt-10">
+          <div className="flex flex-col w-2/3 max-w-2xl min-h-0 gap-2 mx-auto mt-10">
             <h1 className="text-4xl font-bold text-center">Import data</h1>
             <p>
-              This tool is used to import unstructured data into Neo4j. It takes a
-              file as input and optionally a schema in the form of{" "}
+              This tool is used to import unstructured data into Neo4j. It takes
+              a file as input and optionally a schema in the form of{" "}
               <a href="https://neo4j.com/developer-blog/describing-property-graph-data-model/">
                 graph data model
               </a>{" "}
               which is used to limit the data that is extracted from the file.
-              It's important to give the schema descriptive tokens so the tool can
-              identify the data that is imported.
+              It's important to give the schema descriptive tokens so the tool
+              can identify the data that is imported.
             </p>
-  
+
+            <p>
+              The tool will try to extract as much data as possible from the
+              file and give you two options to import the data into Neo4j:
+            </p>
+
+            <ul>
+              <li>A cypher script that you can run in Neo4j Browser</li>
+              <li>A file that you can import using the Neo4j Import Tool</li>
+            </ul>
+
+            <p>
+              {" "}
+              If you use the Neo4j file you need to open Neo4j Importer which
+              can be found in the Neo4j Desktop. Select the options Open model
+              (with data){" "}
+            </p>
+
             <Switch
               label="Use schema"
               checked={useSchema}
@@ -144,7 +171,7 @@ function App() {
                 />
               </div>
             ) : null}
-  
+
             <input type="file" className={`w-full max-w-xs file-input`} />
             <button
               className={`ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong ${
@@ -156,13 +183,14 @@ function App() {
               {loading ? "Importing. This will take a while..." : "Import"}
             </button>
           </div>
-  
+
           <div>
             {result ? (
               <div className="flex flex-col w-2/3 gap-2 mx-auto">
                 <h1 className="text-4xl font-bold text-center">Result</h1>
                 <p>
-                  The import was successful. You can save the result as a cypher.
+                  The import was successful. You can save the result as a
+                  cypher.
                 </p>
                 <button
                   className="ndl-btn ndl-large ndl-filled ndl-primary n-bg-palette-primary-bg-strong"

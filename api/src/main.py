@@ -128,7 +128,8 @@ async def websocket_endpoint(websocket: WebSocket):
             api_key = openai_api_key if openai_api_key else data.get("api_key")
 
             default_llm = OpenAIChat(
-                openai_api_key=api_key, model_name=data.get('model_name', 'gpt-3.5-turbo-0613')
+                openai_api_key=api_key,
+                model_name=data.get("model_name", "gpt-3.5-turbo-0613"),
             )
             summarize_results = SummarizeCypherResult(
                 llm=OpenAIChat(
@@ -203,7 +204,9 @@ async def root(payload: ImportPayload):
     try:
         result = ""
 
-        llm = OpenAIChat(openai_api_key=api_key, model_name="gpt-3.5-turbo-0613")
+        llm = OpenAIChat(
+            openai_api_key=api_key, model_name="gpt-3.5-turbo-16k", max_tokens=4000
+        )
 
         if not payload.neo4j_schema:
             extractor = DataExtractor(llm=llm)
