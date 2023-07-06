@@ -1,5 +1,6 @@
 runtime: nodejs18
 service: default
+env: flex
 
 env_variables:
   VITE_UNSTRUCTURED_IMPORT_BACKEND_ENDPOINT: "https://api-dot-nallm-experiments.ew.r.appspot.com"
