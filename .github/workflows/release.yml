@@ -42,10 +42,10 @@ jobs:
         uses: "google-github-actions/deploy-appengine@v1"
         with:
           working_directory: "/home/runner/work/NaLLM/NaLLM/api"
-          deliverables: api.yaml
+          deliverables: api.yml
       - id: "deploy-ui"
         name: Deploy UI to App Engine
         uses: "google-github-actions/deploy-appengine@v1"
         with:
           working_directory: "/home/runner/work/NaLLM/NaLLM/ui"
-          deliverables: app.yaml
+          deliverables: app.yml
