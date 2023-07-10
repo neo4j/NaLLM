@@ -2,7 +2,7 @@ runtime: python
 service: api
 env: flex
 
-entrypoint: cd src && gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --timeout 1000
+entrypoint: cd src && gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --timeout 2000
 
 runtime_config:
   operating_system: "ubuntu22"
