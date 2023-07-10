@@ -6,13 +6,6 @@ runtime_config:
   operating_system: "ubuntu22"
   runtime_version: 18
 
-env_variables:
-  VITE_UNSTRUCTURED_IMPORT_BACKEND_ENDPOINT: "https://api-dot-nallm-experiments.ew.r.appspot.com"
-  VITE_KG_CHAT_BACKEND_ENDPOINT: "wss://api-dot-nallm-experiments.ew.r.appspot.com/text2text"
-  VITE_HAS_API_KEY_ENDPOINT: "https://api-dot-nallm-experiments.ew.r.appspot.com/hasapikey"
-  VITE_KG_CHAT_SAMPLE_QUESTIONS_ENDPOINT: "https://api-dot-nallm-experiments.ew.r.appspot.com/questionProposalsForCurrentDb"
-  VITE_REPORT_DATA_ENDPOINT: "https://api-dot-nallm-experiments.ew.r.appspot.com"
-
 handlers:
   - url: /.*
     secure: always
