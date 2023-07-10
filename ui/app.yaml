@@ -1,6 +1,10 @@
-runtime: nodejs18
+runtime: nodejs
 service: default
 env: flex
+
+runtime_config:
+  operating_system: "ubuntu22"
+  runtime_version: 18
 
 env_variables:
   VITE_UNSTRUCTURED_IMPORT_BACKEND_ENDPOINT: "https://api-dot-nallm-experiments.ew.r.appspot.com"

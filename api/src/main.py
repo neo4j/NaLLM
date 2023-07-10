@@ -232,6 +232,7 @@ async def root(payload: ImportPayload):
 
 class companyReportPayload(BaseModel):
     company: str
+    api_key: Optional[str]
 
 
 # This endpoint is database specific and only works with the Demo database.
@@ -250,7 +251,7 @@ async def companyInformation(payload: companyReportPayload):
         model_name="gpt-3.5-turbo-16k-0613",
         max_tokens=512,
     )
-
+    print("Running company report for " + payload.company)
     company_report = CompanyReport(neo4j_connection, payload.company, llm)
     result = company_report.run()
 
