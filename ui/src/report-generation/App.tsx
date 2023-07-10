@@ -87,7 +87,9 @@ function App() {
 
   const changeSelectedCompany = async (company: string) => {
     setLoadingCompanyData(true);
-    const data = await getReportData(company);
+    const key = apiKey === "" ? undefined : apiKey;
+
+    const data = await getReportData(company, key);
     setLoadingCompanyData(false);
     console.log(data);
     if (data) {

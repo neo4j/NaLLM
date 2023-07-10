@@ -21,17 +21,17 @@ class CompanyReport(BaseComponent):
         summarize_results = SummarizeCypherResult(
             llm=self.llm,
         )
-
+        print("CompanyReport")
         company_data = self.database.query(
             "MATCH (n {name:$companyName}) return n.summary, n.isDissolved, n.nbrEmployees, n.name, n.motto, n.isPublic, n.revenue",
             {"companyName": self.company},
         )
-
+        print(company_data)
         relation_data = self.database.query(
             "MATCH (n {name:$companyName})-[r]->(m) WHERE NOT m:Article OPTIONAL MATCH (m)-[:IN_COUNTRY]->(c:Country) WITH r,m,c return r,m,c",
             {"companyName": self.company},
         )
-
+        print(relation_data)
         company_data_output = {
             "name": company_data[0]["n.name"],
             "motto": company_data[0]["n.motto"],
@@ -41,7 +41,8 @@ class CompanyReport(BaseComponent):
             "isPublic": company_data[0]["n.isPublic"],
             "revenue": company_data[0].get("n.revenue", None),
         }
-
+        print(company_data_output)
+        print("all data fetched")
         offices = []
         suppliers = []
         subsidiaries = []
@@ -122,7 +123,7 @@ class CompanyReport(BaseComponent):
             "Can you summarize the following articles about " + self.company + " ?",
             article_data[:HARD_LIMIT_CONTEXT_RECORDS],
         )
-
+        print("output: " + output)
         return {
             "company": company_data_output,
             "subsidiaries": subsidiaries,

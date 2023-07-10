@@ -1,0 +1,41 @@
+name: "Release"
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
+        with:
+          create_credentials_file: true
+          workload_identity_provider: "projects/861986238120/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions"
+          service_account: "gha-app-engine-publisher@nallm-experiments.iam.gserviceaccount.com"
+      - id: "deploy-api"
+        name: Deploy API to App Engine
+        uses: "google-github-actions/deploy-appengine@v1"
+        with:
+          working_directory: "/home/runner/work/NaLLM/NaLLM/api"
+          deliverables: api.yaml
+      - id: "deploy-ui"
+        name: Deploy UI to App Engine
+        uses: "google-github-actions/deploy-appengine@v1"
+        with:
+          working_directory: "/home/runner/work/NaLLM/NaLLM/ui"
+          deliverables: app.yaml

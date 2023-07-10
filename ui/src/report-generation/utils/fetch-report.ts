@@ -8,7 +8,7 @@ type JSONResponse = {
 export const getReportData = async (company: string, apiKey?: string) => {
   const body = {
     company,
-    apiKey: apiKey ? apiKey : undefined,
+    api_key: apiKey ? apiKey : undefined,
   };
 
   const response = await fetch(
