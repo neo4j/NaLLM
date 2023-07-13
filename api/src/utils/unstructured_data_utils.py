@@ -10,6 +10,9 @@ def nodesTextToListOfDict(nodes):
     result = []
     for node in nodes:
         nodeList = node.split(",")
+        if len(nodeList) < 2:
+            continue
+
         name = nodeList[0].strip().replace('"', "")
         label = nodeList[1].strip().replace('"', "")
         properties = re.search(jsonRegex, node)
@@ -29,8 +32,6 @@ def nodesTextToListOfDict(nodes):
 def relationshipTextToListOfDict(relationships):
     result = []
     for relation in relationships:
-        print("relation", relation)
-
         relationList = relation.split(",")
         if len(relation) < 3:
             continue

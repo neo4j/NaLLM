@@ -3,7 +3,6 @@ import os
 from typing import List
 
 from components.base_component import BaseComponent
-from joblib import Parallel, delayed
 from llm.basellm import BaseLLM
 from utils.unstructured_data_utils import (
     nodesTextToListOfDict,
@@ -16,6 +15,7 @@ def generate_system_message_with_schema() -> str:
 You are a data scientist working for a company that is building a graph database. Your task is to extract information from data and convert it into a graph database.
 Provide a set of Nodes in the form [ENTITY, TYPE, PROPERTIES] and a set of relationships in the form [ENTITY1, RELATIONSHIP, ENTITY2, PROPERTIES]. 
 Pay attention to the type of the properties, if you can't find data for a property set it to null. Don't make anything up and don't add any extra data. If you can't find any data for a node or relationship don't add it.
+Only add nodes and relationships that are part of the schema.
 
 Example:
 Schema: Nodes: [Person {age: integer, name: string}] Relationships: [Person, roommate, Person]
@@ -39,6 +39,22 @@ Relationships: ["alice", "roommate", "bob", {"start": 2021}], ["alice", "owns", 
 """
 
 
+def generate_system_message_with_labels() -> str:
+    return """
+You are a data scientist working for a company that is building a graph database. Your task is to extract information from data and convert it into a graph database.
+Provide a set of Nodes in the form [ENTITY_ID, TYPE, PROPERTIES] and a set of relationships in the form [ENTITY_ID_1, RELATIONSHIP, ENTITY_ID_2, PROPERTIES].
+It is important that the ENTITY_ID_1 and ENTITY_ID_2 exists as nodes with a matching ENTITY_ID. If you can't pair a relationship with a pair of nodes don't add it.
+When you find a node or relationship you want to add try to create a generic TYPE for it that  describes the entity you can also think of it as a label.
+You will be given a list of types that you should try to use when creating the TYPE for a node. If you can't find a type that fits the node you can create a new one.
+
+Example:
+Data: Alice lawyer and is 25 years old and Bob is her roommate since 2001. Bob works as a journalist. Alice owns a the webpage www.alice.com and Bob owns the webpage www.bob.com.
+Types: ["Person", "Webpage"]
+Nodes: ["alice", "Person", {"age": 25, "occupation": "lawyer", "name":"Alice"}], ["bob", "Person", {"occupation": "journalist", "name": "Bob"}], ["alice.com", "Webpage", {"url": "www.alice.com"}], ["bob.com", "Webpage", {"url": "www.bob.com"}]
+Relationships: ["alice", "roommate", "bob", {"start": 2021}], ["alice", "owns", "alice.com", {}], ["bob", "owns", "bob.com", {}]
+"""
+
+
 def generate_prompt(data) -> str:
     return f"""
 Data: {data}"""
@@ -48,6 +64,12 @@ def generate_prompt_with_schema(data, schema) -> str:
     return f"""
 Schema: {schema}
 Data: {data}"""
+
+
+def generate_prompt_with_labels(data, labels) -> str:
+    return f"""
+Data: {data}
+Types: {labels}"""
 
 
 def splitString(string, max_length) -> List[str]:
@@ -83,13 +105,10 @@ def getNodesAndRelationshipsFromResult(result):
     relationships = []
     for row in result:
         parsing = re.match(regex, row, flags=re.S)
-        print("parsing", parsing)
         if parsing == None:
             continue
         rawNodes = str(parsing.group(1))
-        print("rawNodes", rawNodes)
         rawRelationships = parsing.group(2)
-        print("rawRelationships", rawRelationships)
         nodes.extend(re.findall(internalRegex, rawNodes))
         relationships.extend(re.findall(internalRegex, rawRelationships))
 
@@ -116,6 +135,15 @@ class DataExtractor(BaseComponent):
         output = self.llm.generate(messages)
         return output
 
+    def process_with_labels(self, chunk, labels):
+        messages = [
+            {"role": "system", "content": generate_system_message_with_schema()},
+            {"role": "user", "content": generate_prompt_with_labels(chunk, labels)},
+        ]
+        print(messages)
+        output = self.llm.generate(messages)
+        return output
+
     def run(self, data: str) -> List[str]:
         system_message = generate_system_message()
         prompt_string = generate_prompt("")
@@ -125,22 +153,20 @@ class DataExtractor(BaseComponent):
         chunked_data = splitStringToFitTokenSpace(
             llm=self.llm, string=data, token_use_per_string=token_usage_per_prompt
         )
-        print("starting multiple procceesing")
+
         results = []
-        multi_processing = False
+        labels = set()
+        print("Starting chunked processing")
+        for chunk in chunked_data:
+            proceededChunk = self.process_with_labels(chunk, list(labels))
+            print("proceededChunk", proceededChunk)
+            chunkResult = getNodesAndRelationshipsFromResult([proceededChunk])
+            print("chunkResult", chunkResult)
+            newLabels = [node["label"] for node in chunkResult["nodes"]]
+            print("newLabels", newLabels)
+            results.append(proceededChunk)
+            labels.update(newLabels)
 
-        if os.environ.get("RUN_PARALLEL", "False") == "True":
-            multi_processing = True
-
-        if multi_processing:
-            results = Parallel(n_jobs=10)(
-                delayed(self.process)(chunk) for chunk in chunked_data
-            )
-        else:
-            for chunk in chunked_data:
-                results.append(self.process(chunk))
-        print("finished multiple procceesing")
-        print(results)
         return getNodesAndRelationshipsFromResult(results)
 
 
@@ -164,7 +190,10 @@ class DataExtractorWithSchema(BaseComponent):
             llm=self.llm, string=data, token_use_per_string=token_usage_per_prompt
         )
         result = []
+        print("Starting chunked processing")
+
         for chunk in chunked_data:
+            print("prompt", generate_prompt_with_schema(chunk, schema))
             messages = [
                 {
                     "role": "system",
