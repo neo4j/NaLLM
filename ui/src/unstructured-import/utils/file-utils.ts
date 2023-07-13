@@ -190,11 +190,19 @@ export const saveImportResultAsNeo4jImport = (importResult: ImportResult) => {
 
     const relationshipsCsv = relationshipsToCsv(relationships);
     console.log(relationships[0].start);
+
+    const fromId = labels.indexOf(startLabel);
+    const toId = labels.indexOf(endLabel);
+
+    if (fromId === -1 || toId === -1) {
+      return;
+    }
+
     modelFile.graph.relationships.push({
       id: `n${index}`,
       type: relationship,
-      fromId: `n${labels.indexOf(startLabel)}`,
-      toId: `n${labels.indexOf(endLabel)}`,
+      fromId: `n${fromId}`,
+      toId: `n${toId}`,
     });
 
     zip.file(`relationships-${relationship}.csv`, relationshipsCsv);
