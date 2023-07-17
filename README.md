@@ -55,6 +55,13 @@ database: companies
 The database contains both structured information about organizations and people as well as news articles.
 The news articles are linked to the mentioned entity, while the actual text is stored in the `Chunk` nodes alongside their _text-embedding-ada-002_ vector representations.
 
+## Bring your own database
+
+To run the project on your own database, follow these two steps:
+
+1. Set appropriate database credentials in `.env` file
+2. Remove or set appropriate Cypher examples in `api/fewshot_examples.py` file 
+
 ## Contributing
 
 We welcome contributions and feedback to improve our project and demonstrations. Please feel free to raise issues or submit pull requests.
