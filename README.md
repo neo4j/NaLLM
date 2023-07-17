@@ -13,7 +13,8 @@ During this project we're also writing blog posts where we deep dive into our le
 1. https://medium.com/neo4j/harnessing-large-language-models-with-neo4j-306ccbdd2867
 2. https://medium.com/neo4j/knowledge-graphs-llms-fine-tuning-vs-retrieval-augmented-generation-30e875d63a35
 3. https://medium.com/neo4j/knowledge-graphs-llms-multi-hop-question-answering-322113f53f51
-
+4. https://medium.com/neo4j/knowledge-graphs-llms-real-time-graph-analytics-89b392eaaa95
+   
 ## Repository Structure
 
 Our repository is designed with an efficient and logical structure for ease of navigation:
