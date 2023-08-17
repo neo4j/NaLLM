@@ -2,8 +2,6 @@
 
 Welcome to the NaLLM project repository, where we are exploring and demonstrating the synergies between Neo4j and Large Language Models (LLMs). As a part of our ongoing project, we are focusing on three primary use cases - a **Natural Language Interface to a Knowledge Graph**, **Creating a Knowledge Graph from Unstructured Data** and **Generate a Report using both static data and data from LLM**.
 
-View Demos [here](https://nallm-experiments.ew.r.appspot.com/)
-
 This repository houses both backend and frontend code, designed and organized to facilitate an intuitive journey through our project.
 
 # Blog posts
