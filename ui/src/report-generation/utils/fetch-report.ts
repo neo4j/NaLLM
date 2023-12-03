@@ -11,8 +11,11 @@ export const getReportData = async (company: string, apiKey?: string) => {
     api_key: apiKey ? apiKey : undefined,
   };
 
-  const response = await fetch(
-    `${import.meta.env.VITE_REPORT_DATA_ENDPOINT}/companyReport`,
+  const COMPANY_REPORT_URI =
+      import.meta.env.VITE_REPORT_DATA_ENDPOINT ??
+      "http://localhost:7860/companyReport";
+
+  const response = await fetch(COMPANY_REPORT_URI,
     {
       method: "POST",
       headers: {
