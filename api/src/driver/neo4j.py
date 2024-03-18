@@ -125,7 +125,7 @@ class Neo4jDatabase:
             """
         MATCH (n)
         WITH count(n) as c
-        RETURN CASE WHEN c > 0 THEN true ELSE false END AS output
+        RETURN CASE WHEN c > 0 THEN false ELSE true END AS output
         """
         )
         return data[0]["output"]
